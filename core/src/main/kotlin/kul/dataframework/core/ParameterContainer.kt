@@ -1,5 +1,6 @@
 package kul.dataframework.core
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 typealias ParameterSubscriber = () -> Unit
@@ -11,17 +12,19 @@ abstract class ParameterContainer<P : Parameter>(
     protected val rootContainer: ParameterContainer<*>?
 ) : Iterable<P> {
 
-    private val rwLock = ReentrantReadWriteLock()
+    private val rwLock = ReentrantReadWriteLock(true)
 
-    @Volatile
+    private val acquireModifyAdder = AtomicInteger()
+    private val acquireReadAdder = AtomicInteger()
+
     var isModifyingNow: Boolean = false
-        get() = rootContainer?.run { isModifyingNow } ?: false || field
+        get() = rootContainer?.run { isModifyingNow } ?: false || acquireModifyAdder.get() != 0
         private set
-    @Volatile
     var isReadingNow: Boolean = false
-        get() = rootContainer?.run { isReadingNow } ?: false || field
+        get() = rootContainer?.run { isReadingNow } ?: false || acquireReadAdder.get() != 0
         private set
 
+    @Volatile
     internal var atomicSubscriber: ParameterSubscriber? = null
 
     open fun handleBeforeModifications() {}
@@ -31,9 +34,12 @@ abstract class ParameterContainer<P : Parameter>(
 
     // inspired by https://github.com/bendgk/effekt
     fun subscribe(sub: ParameterSubscriber) {
-        check(!(isModifyingNow || isReadingNow)) {
-            "can't invoke ParameterContainer#subscribe() because reading or modifying block are running"
+        check(atomicSubscriber == null) {
+            "can't invoke ParameterContainer#subscribe() inside another subscribe block"
         }
+//        check(!(isModifyingNow || isReadingNow)) {
+//            "can't invoke ParameterContainer#subscribe() because reading or modifying block are running"
+//        }
         rwLock.writeLock().lock()
         atomicSubscriber = sub
         try {
@@ -45,43 +51,46 @@ abstract class ParameterContainer<P : Parameter>(
     }
 
     fun enableModifications() {
-        if (isModifyingNow) {
-            throw IllegalStateException("redundant ModifiableItem#enableModifications() call")
-        }
+//        if (isModifyingNow) {
+//            throw IllegalStateException("redundant ModifiableItem#enableModifications() call")
+//        }
 
         rwLock.writeLock().lock()
-        isModifyingNow = true
-
+        acquireModifyAdder.incrementAndGet()
         try {
             handleBeforeModifications()
         } catch (th: Throwable) {
+            acquireModifyAdder.decrementAndGet()
             rwLock.writeLock().unlock()
             throw th
         }
     }
 
     fun disableModifications() {
-        if (!isModifyingNow) {
-            throw IllegalStateException("redundant ModifiableItem#disableModifications() call")
-        }
+//        if (!isModifyingNow) {
+//            throw IllegalStateException("redundant ModifiableItem#disableModifications() call")
+//        }
 
-        isModifyingNow = false
+//        isModifyingNow = false
 
         try {
             handleAfterModifications()
         } finally {
+            acquireModifyAdder.decrementAndGet()
             rwLock.writeLock().unlock()
         }
     }
 
     fun acquireRead() {
-        isReadingNow = true
+//        isReadingNow = true
         rwLock.readLock().lock()
+        acquireReadAdder.incrementAndGet()
     }
 
     fun releaseRead() {
+        acquireReadAdder.decrementAndGet()
         rwLock.readLock().unlock()
-        isReadingNow = false
+//        isReadingNow = false
     }
 
     fun checkIsModificationsEnabled() {
@@ -108,9 +117,9 @@ fun <P : Parameter, C : ParameterContainer<P>, R> C.acquireReadIt(readBlock: (C)
     acquireRead(readBlock)
 
 inline fun <P : Parameter, C : ParameterContainer<P>> C.modify(modifyBlock: C.() -> Unit) = apply {
-    if (isReadingNow) {
-        throw IllegalArgumentException("Can't be modified while read has been acquired")
-    }
+//    if (isReadingNow) {
+//        throw IllegalArgumentException("Can't be modified while read has been acquired")
+//    }
     if (isModifyingNow) {
        //nested block, passing without preparations and special code
        modifyBlock(this)
