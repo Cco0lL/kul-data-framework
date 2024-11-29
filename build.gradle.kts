@@ -1,10 +1,12 @@
 plugins {
     kotlin("jvm") version "2.0.21"
+    `maven-publish`
 }
 
 subprojects {
 
     apply(plugin = "kotlin")
+    apply(plugin = "maven-publish")
 
     repositories { mavenCentral() }
 
