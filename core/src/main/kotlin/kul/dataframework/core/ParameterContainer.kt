@@ -31,9 +31,17 @@ abstract class ParameterContainer<P : Parameter>(
 
     // inspired by https://github.com/bendgk/effekt
     fun subscribe(sub: ParameterSubscriber) {
+        check(!(isModifyingNow || isReadingNow)) {
+            "can't invoke ParameterContainer#subscribe() because reading or modifying block are running"
+        }
+        rwLock.writeLock().lock()
         atomicSubscriber = sub
-        sub()
-        atomicSubscriber = null
+        try {
+            sub()
+        } finally {
+            atomicSubscriber = null
+            rwLock.writeLock().unlock()
+        }
     }
 
     fun enableModifications() {
