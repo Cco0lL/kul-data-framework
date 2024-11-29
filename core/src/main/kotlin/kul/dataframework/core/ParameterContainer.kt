@@ -24,7 +24,6 @@ abstract class ParameterContainer<P : Parameter>(
         get() = rootContainer?.run { isReadingNow } ?: false || acquireReadAdder.get() != 0
         private set
 
-    @Volatile
     internal var atomicSubscriber: ParameterSubscriber? = null
 
     open fun handleBeforeModifications() {}
