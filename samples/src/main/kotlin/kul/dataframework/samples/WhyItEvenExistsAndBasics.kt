@@ -32,14 +32,14 @@ fun main() {
 
     //every operation of modification should be in this block
     partOfSomethingNew.modify {
-        somePieceOfBeauty = "you will never find something beauty in me, i just have ugly soul" //will print "beauty: you will never find something beauty in me,
-                                                                                                // i just have ugly soul, magicNum: 3221340382"
+        somePieceOfBeauty = "you will never find something beauty in me, i just have an ugly soul" //will print "beauty: you will never find something beauty in me,
+                                                                                                // i just have an ugly soul, magicNum: 3221340382"
     }
 
     //if you need more control of modification scope, you can use this case
     partOfSomethingNew.enableModifications()
     partOfSomethingNew.magicNumber = 0xC01DBABE //will print "beauty: you will never find something beauty in me,
-    partOfSomethingNew.disableModifications()   // i just have ugly soul, magicNum: 3223173822"
+    partOfSomethingNew.disableModifications()   // i just have an ugly soul, magicNum: 3223173822"
 
     partOfSomethingNew.modify {
         somePieceOfBeauty = "wealth or knowledge..... so whats you gonna take?"
