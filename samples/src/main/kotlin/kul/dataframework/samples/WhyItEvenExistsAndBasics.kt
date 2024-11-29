@@ -8,45 +8,50 @@ import kul.dataframework.serialization.gson.toJson
  * @author Cco0lL created 11/29/24 8:19PM
  **/
 
-class OrderInfo: ParameterizedObject() {
+class PartOfSomethingNew: ParameterizedObject() {
 
-    var name by param(NameMeta, "some cool order")
-    val position by intParam(PositionMeta, 10)
+    var somePieceOfBeauty by param(BeautyMeta, "even after the darkest night comes the dawn")
+    var magicNumber by longParam(MagicNumMeta, 0xC001C0DE)
 
     companion object {
-        val NameMeta = StringParameterMetadata("name")
-        val PositionMeta = ParameterMetaData("position")
+        val BeautyMeta = StringParameterMetadata("somePieceOfBeauty")
+        val MagicNumMeta = ParameterMetaData("position")
     }
 }
 
 fun main() {
-    val orderInfo = OrderInfo()
-
+    val partOfSomethingNew = PartOfSomethingNew()
     //when you use subscribe function, it subscribes to listen change of any property
     // that has been used in this block (property must belong the parameterized object called subscribe,
     // and subscribe block will run first time at function invocation, and then every time when any of
     // used properties are changed
-    orderInfo.subscribe {
-        println("name: ${orderInfo.name}, position: ${orderInfo.position}") //will print "name: some cool order, position: 10" immediately
+    partOfSomethingNew.subscribe {
+        println("beauty: ${partOfSomethingNew.somePieceOfBeauty}, magicNum: ${partOfSomethingNew.magicNumber}") //will print "beauty: even after the darkest night comes the dawn,
+                                                                                                                // magicNum: 3221340382" immediately
     }
 
     //every operation of modification should be in this block
-    orderInfo.modify {
-        name = "not some cool order anymore" //will print "name: not some cool order anymore, position: 10"
+    partOfSomethingNew.modify {
+        somePieceOfBeauty = "you will never find something beauty in me, i just have ugly soul" //will print "beauty: you will never find something beauty in me,
+                                                                                                // i just have ugly soul, magicNum: 3221340382"
     }
 
     //if you need more control of modification scope, you can use this case
-    orderInfo.enableModifications()
-    // makes whatever you want
-    orderInfo.disableModifications()
+    partOfSomethingNew.enableModifications()
+    partOfSomethingNew.magicNumber = 0xC01DBABE //will print "beauty: you will never find something beauty in me,
+    partOfSomethingNew.disableModifications()   // i just have ugly soul, magicNum: 3223173822"
+
+    partOfSomethingNew.modify {
+        somePieceOfBeauty = "wealth or knowledge..... so whats you gonna take?"
+    }
 
     //serialization example
-    val jsonObject = orderInfo.toJson()
+    val jsonObject = partOfSomethingNew.toJson()
     println(jsonObject.toString())
-    val orderInfo2 = OrderInfo().readJson(jsonObject)
+    val partOfSomethingNew2 = PartOfSomethingNew().readJson(jsonObject)
 
-    orderInfo2.acquireRead {
-        println(name)
-        println(position)
+    partOfSomethingNew2.acquireRead {
+        println(somePieceOfBeauty)
+        println(magicNumber)
     }
 }
