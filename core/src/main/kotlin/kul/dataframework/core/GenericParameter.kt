@@ -27,8 +27,11 @@ open class GenericParameter<T>(
         allowSubscribe()
         return value
     }
+
     operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: T) {
         this.value = value
         runSubscribers()
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }

@@ -64,6 +64,28 @@ class ParameterList<P : Parameter>(
     override fun unwrappedParametersIterator(): MutableIterator<P> {
         return backingList.iterator()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ParameterList<*>
+
+        if (backingList != other.backingList) return false
+        if (universe != other.universe) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = backingList.hashCode()
+        result = result * 59 + universe.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return toStringImpl(backingList)
+    }
 }
 
 class ParameterMap<P : Parameter>(
@@ -113,6 +135,28 @@ class ParameterMap<P : Parameter>(
     override fun unwrappedParametersIterator(): MutableIterator<P> {
         return backingMap.values.iterator()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ParameterMap<*>
+
+        if (backingMap != other.backingMap) return false
+        if (universe != other.universe) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = backingMap.hashCode()
+        result = result * 59 + universe.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return toStringImpl(backingMap.values)
+    }
 }
 
 abstract class ParameterCollection<P : Parameter>(
@@ -152,16 +196,7 @@ abstract class ParameterCollection<P : Parameter>(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as ParameterCollection<*>
-
-        return universe == other.universe
-    }
-
-    override fun hashCode(): Int {
-        return universe.hashCode()
+    protected fun toStringImpl(parameters: Collection<P>): String {
+        return parameters.toString()
     }
 }

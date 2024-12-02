@@ -1,7 +1,5 @@
 package kul.dataframework.core
 
-import kul.dataframework.core.EnumParameterMetadata
-
 /**
  * @author Cco0lL created 9/21/24 5:14PM
  **/
@@ -41,6 +39,10 @@ open class ParameterizedObject(
     override fun hashCode(): Int {
         val hashCode = parameterMap.hashCode()
         return hashCode
+    }
+
+    override fun toString(): String {
+        return parameterMap.values.toString()
     }
 
     // use bottom functions for initialization only

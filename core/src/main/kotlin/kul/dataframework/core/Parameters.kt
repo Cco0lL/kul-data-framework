@@ -33,6 +33,8 @@ open class BooleanParameter(
         this.value = value
         runSubscribers()
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class IntParameter(
@@ -64,6 +66,8 @@ open class IntParameter(
         this.value = value
         runSubscribers()
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class FloatParameter(
@@ -95,6 +99,8 @@ open class FloatParameter(
         this.value = value
         runSubscribers()
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class LongParameter(
@@ -126,6 +132,8 @@ open class LongParameter(
         this.value = value
         runSubscribers()
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class DoubleParameter(
@@ -157,6 +165,8 @@ open class DoubleParameter(
         this.value = value
         runSubscribers()
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class EnumParameter<T : Enum<T>>(
@@ -170,4 +180,6 @@ open class EnumParameter<T : Enum<T>>(
     fun set(name: String) {
         value = universe.first { it.name == name }
     }
+
+    override fun toString() = "${metaData.prettyName}: $value"
 }
