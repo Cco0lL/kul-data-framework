@@ -9,7 +9,7 @@ package kul.dataframework.core
  */
 open class ParameterMetaData(
     /**
-     * represents key of parameter. It is a good practice
+     * represents key of parameter. It is a good way
      * to set key that equals to property name, it will
      * help to avoid missunderstandings in serialization
      * context and data analysis.
@@ -26,4 +26,24 @@ open class ParameterMetaData(
      * misc description for UI or UX or another case
      */
     val description = description.map { it.toString() }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ParameterMetaData
+
+        if (key != other.key) return false
+//        if (prettyName != other.prettyName) return false
+//        if (description != other.description) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = key.hashCode()
+//        result = 31 * result + prettyName.hashCode()
+//        result = 31 * result + description.hashCode()
+        return result
+    }
 }

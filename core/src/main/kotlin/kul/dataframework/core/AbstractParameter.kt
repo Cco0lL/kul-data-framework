@@ -26,17 +26,5 @@ abstract class AbstractParameter(
     }
     /* ************************************************************************ */
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as Parameter
-        return metaData.key == other.metaData.key
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.key.hashCode()
-        return result
-    }
-
     override fun toString() = "parameter { class: ${this::class.simpleName}, name: ${metaData.key} }"
 }

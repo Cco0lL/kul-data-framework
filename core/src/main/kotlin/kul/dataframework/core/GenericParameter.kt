@@ -36,5 +36,23 @@ open class GenericParameter<T>(
     override fun copy(ownerContainer: ParameterContainer<*>): GenericParameter<T> =
         GenericParameter(ownerContainer, metaData, value)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GenericParameter<*>
+
+        if (metaData != other.metaData) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metaData.hashCode()
+        result = 31 * result + (value.hashCode() ?: 0)
+        return result
+    }
+
     override fun toString() = "${metaData.prettyName}: $value"
 }

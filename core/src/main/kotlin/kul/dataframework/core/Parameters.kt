@@ -36,7 +36,27 @@ open class BooleanParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = BooleanParameter(ownerContainer, metaData, value)
 
+
+
     override fun toString() = "${metaData.prettyName}: $value"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BooleanParameter
+
+        if (metaData != other.metaData) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metaData.hashCode()
+        result = result * 59 + value.hashCode()
+        return result
+    }
 }
 
 open class IntParameter(
@@ -70,6 +90,24 @@ open class IntParameter(
     }
 
     override fun copy(ownerContainer: ParameterContainer<*>) = IntParameter(ownerContainer, metaData, value)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as IntParameter
+
+        if (metaData != other.metaData) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metaData.hashCode()
+        result = result * 59 + value.hashCode()
+        return result
+    }
 
     override fun toString() = "${metaData.prettyName}: $value"
 }
@@ -106,6 +144,24 @@ open class FloatParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = FloatParameter(ownerContainer, metaData, value)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FloatParameter
+
+        if (metaData != other.metaData) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metaData.hashCode()
+        result = result * 59 + value.hashCode()
+        return result
+    }
+
     override fun toString() = "${metaData.prettyName}: $value"
 }
 
@@ -141,6 +197,24 @@ open class LongParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = LongParameter(ownerContainer, metaData, value)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LongParameter
+
+        if (metaData != other.metaData) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metaData.hashCode()
+        result = result * 59 + value.hashCode()
+        return result
+    }
+
     override fun toString() = "${metaData.prettyName}: $value"
 }
 
@@ -175,6 +249,24 @@ open class DoubleParameter(
     }
 
     override fun copy(ownerContainer: ParameterContainer<*>) = DoubleParameter(ownerContainer, metaData, value)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as DoubleParameter
+
+        if (metaData != other.metaData) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metaData.hashCode()
+        result = result * 59 + value.hashCode()
+        return result
+    }
 
     override fun toString() = "${metaData.prettyName}: $value"
 }

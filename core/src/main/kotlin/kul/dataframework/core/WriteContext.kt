@@ -19,7 +19,7 @@ package kul.dataframework.core
 interface WriteContext<ELEMENT, OBJECT> {
 
     //The method is NOOP for "byte-stream" protocols because all
-    // writes happen when creating an element
+    // writes are happen when creating an element
     fun writeElement(key: String, obj: OBJECT, element: ELEMENT)
 
     //Writes data to object if protocol is "byte-stream"
