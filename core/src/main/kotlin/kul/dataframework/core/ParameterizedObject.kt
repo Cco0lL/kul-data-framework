@@ -81,6 +81,10 @@ open class ParameterizedObject(
         initialValue: T = metaData.genericDefaultValue(ownerContainerForParameter),
     ) = +EnumParameter(ownerContainerForParameter, metaData, initialValue)
 
+    protected fun <P : Parameter, C : ParameterCollection<P>> collectionParam(
+        metadata: CollectionParameterMetaData<P, C, *>,
+    ) = +CollectionParameter(ownerContainerForParameter, metadata)
+
     // opened for cases when you need create explicit parameter function like an enumParam,
     // the best way to do that is extensions
     val ownerContainerForParameter get() = rootContainer ?: this
