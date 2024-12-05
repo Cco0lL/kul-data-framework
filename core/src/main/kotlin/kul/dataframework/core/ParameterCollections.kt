@@ -172,8 +172,10 @@ abstract class ParameterCollection<P : Parameter>(
 
     abstract fun add(param: P)
 
-    fun <FUN_P : P> add(universeItem: ParameterUniverse.Item<FUN_P, *>, initBlock: FUN_P.() -> Unit) {
-        add(universeItem.createParam(rootContainer ?: this).apply(initBlock))
+    fun <FUN_P : P> add(universeItem: ParameterUniverse.Item<FUN_P, *>, initBlock: (FUN_P.() -> Unit)?) {
+        val param = universeItem.createParam(rootContainer ?: this)
+        initBlock?.run { param.apply(this) }
+        add(param)
     }
 
     abstract fun remove(name: String)

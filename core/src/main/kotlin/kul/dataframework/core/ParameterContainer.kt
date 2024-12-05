@@ -33,7 +33,7 @@ abstract class ParameterContainer<P : Parameter>(
 
     // inspired by https://github.com/bendgk/effekt
     fun subscribe(sub: ParameterSubscriber) {
-        check(atomicSubscriber == null) {
+        check(atomicSubscriber === null) {
             "can't invoke ParameterContainer#subscribe() inside another subscribe block"
         }
 //        check(!(isModifyingNow || isReadingNow)) {
