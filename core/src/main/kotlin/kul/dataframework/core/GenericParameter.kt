@@ -33,5 +33,8 @@ open class GenericParameter<T>(
         runSubscribers()
     }
 
+    override fun copy(ownerContainer: ParameterContainer<*>): GenericParameter<T> =
+        GenericParameter(ownerContainer, metaData, value)
+
     override fun toString() = "${metaData.prettyName}: $value"
 }

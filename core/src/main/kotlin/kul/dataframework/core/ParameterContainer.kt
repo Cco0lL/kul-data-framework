@@ -31,6 +31,10 @@ abstract class ParameterContainer<P : Parameter>(
 
     abstract fun get(name: String): P
 
+    open fun copy(rootContainer: ParameterContainer<*>? = this.rootContainer): ParameterContainer<P> {
+        throw UnsupportedOperationException("Not implemented")
+    }
+
     // inspired by https://github.com/bendgk/effekt
     fun subscribe(sub: ParameterSubscriber) {
         check(atomicSubscriber === null) {

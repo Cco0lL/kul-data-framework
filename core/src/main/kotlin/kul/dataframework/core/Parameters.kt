@@ -6,7 +6,7 @@ package kul.dataframework.core
 open class BooleanParameter(
     ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
-    initialValue: Boolean = false
+    initialValue: Boolean = false,
 ) : AbstractParameter(ownerContainer, metaData) {
 
     var value = initialValue
@@ -33,6 +33,8 @@ open class BooleanParameter(
         this.value = value
         runSubscribers()
     }
+
+    override fun copy(ownerContainer: ParameterContainer<*>) = BooleanParameter(ownerContainer, metaData, value)
 
     override fun toString() = "${metaData.prettyName}: $value"
 }
@@ -67,13 +69,15 @@ open class IntParameter(
         runSubscribers()
     }
 
+    override fun copy(ownerContainer: ParameterContainer<*>) = IntParameter(ownerContainer, metaData, value)
+
     override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class FloatParameter(
     ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
-    initialValue: Float = 0f
+    initialValue: Float = 0f,
 ) : AbstractParameter(ownerContainer, metaData) {
 
     var value = initialValue
@@ -100,13 +104,15 @@ open class FloatParameter(
         runSubscribers()
     }
 
+    override fun copy(ownerContainer: ParameterContainer<*>) = FloatParameter(ownerContainer, metaData, value)
+
     override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class LongParameter(
     ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
-    initialValue: Long = 0L
+    initialValue: Long = 0L,
 ) : AbstractParameter(ownerContainer, metaData) {
 
     var value = initialValue
@@ -133,13 +139,15 @@ open class LongParameter(
         runSubscribers()
     }
 
+    override fun copy(ownerContainer: ParameterContainer<*>) = LongParameter(ownerContainer, metaData, value)
+
     override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class DoubleParameter(
     ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
-    initialValue: Double = 0.0
+    initialValue: Double = 0.0,
 ) : AbstractParameter(ownerContainer, metaData) {
 
     var value = initialValue
@@ -166,13 +174,15 @@ open class DoubleParameter(
         runSubscribers()
     }
 
+    override fun copy(ownerContainer: ParameterContainer<*>) = DoubleParameter(ownerContainer, metaData, value)
+
     override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class EnumParameter<T : Enum<T>>(
     ownerContainer: ParameterContainer<*>,
     override val metaData: EnumParameterMetadata<T>,
-    initialValue: T = metaData.enumUniverse[0]
+    initialValue: T = metaData.enumUniverse[0],
 ) : GenericParameter<T>(ownerContainer, metaData, initialValue) {
 
     val universe get() = metaData.enumUniverse
@@ -181,5 +191,22 @@ open class EnumParameter<T : Enum<T>>(
         value = universe.first { it.name == name }
     }
 
-    override fun toString() = "${metaData.prettyName}: $value"
+    override fun copy(ownerContainer: ParameterContainer<*>) =
+        EnumParameter(ownerContainer, metaData, value)
+}
+
+open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
+    ownerContainer: ParameterContainer<*>,
+    override val metaData: CollectionParameterMetaData<P, C, *>,
+) : GenericParameter<C>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
+
+    override fun copy(ownerContainer: ParameterContainer<*>) =
+        CollectionParameter(ownerContainer, metaData).apply {
+            value.modify {
+                for (param in this@CollectionParameter.value) {
+                    @Suppress("UNCHECKED_CAST")
+                    add(param.copy() as P)
+                }
+            }
+        }
 }

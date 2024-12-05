@@ -61,6 +61,14 @@ class ParameterList<P : Parameter>(
         }
     }
 
+    override fun copy(rootContainer: ParameterContainer<*>?): ParameterList<P> {
+        return ParameterList(universe, rootContainer).modifyIt {
+            for (parameter in this)
+                @Suppress("UNCHECKED_CAST")
+                it += parameter.copy() as P
+        }
+    }
+
     override fun unwrappedParametersIterator(): MutableIterator<P> {
         return backingList.iterator()
     }
@@ -71,8 +79,8 @@ class ParameterList<P : Parameter>(
 
         other as ParameterList<*>
 
-        if (backingList != other.backingList) return false
         if (universe != other.universe) return false
+        if (backingList != other.backingList) return false
 
         return true
     }
@@ -132,6 +140,14 @@ class ParameterMap<P : Parameter>(
         )
     }
 
+    override fun copy(rootContainer: ParameterContainer<*>?): ParameterMap<P> {
+        return ParameterMap(universe, rootContainer).modifyIt {
+            for (parameter in this)
+                @Suppress("UNCHECKED_CAST")
+                it += parameter.copy() as P
+        }
+    }
+
     override fun unwrappedParametersIterator(): MutableIterator<P> {
         return backingMap.values.iterator()
     }
@@ -170,22 +186,26 @@ abstract class ParameterCollection<P : Parameter>(
     operator fun <FUN_P : P> get(universeItem: ParameterUniverse.Item<FUN_P, *>): FUN_P =
         get(universeItem.metaData.key) as FUN_P
 
+    operator fun plusAssign(param: P) { add(param) }
     abstract fun add(param: P)
 
-    fun <FUN_P : P> add(universeItem: ParameterUniverse.Item<FUN_P, *>, initBlock: (FUN_P.() -> Unit)?) {
+    operator fun <FUN_P : P> plusAssign(universeItem: ParameterUniverse.Item<FUN_P, *>) { add(universeItem) }
+    fun <FUN_P : P> add(universeItem: ParameterUniverse.Item<FUN_P, *>, initBlock: (FUN_P.() -> Unit)? = null) {
         val param = universeItem.createParam(rootContainer ?: this)
         initBlock?.run { param.apply(this) }
         add(param)
     }
 
+    operator fun minusAssign(universeItem: ParameterUniverse.Item<P, *>) { remove(universeItem) }
+    fun remove(universeItem: ParameterUniverse.Item<P, *>) { remove(universeItem.metaData.key) }
     abstract fun remove(name: String)
-
-    fun remove(universeItem: ParameterUniverse.Item<P, *>) {
-        remove(universeItem.metaData.key)
-    }
 
     abstract fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT)
     abstract fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT
+
+    override fun copy(rootContainer: ParameterContainer<*>?): ParameterCollection<P> {
+        throw IllegalArgumentException("Not Implemented")
+    }
 
     protected abstract fun unwrappedParametersIterator(): MutableIterator<P>
     override fun iterator() = object : MutableIterator<P> {
