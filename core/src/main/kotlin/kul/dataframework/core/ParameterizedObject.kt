@@ -90,6 +90,10 @@ open class ParameterizedObject(
         metadata: CollectionParameterMetaData<P, C, *>,
     ) = +CollectionParameter(this, metadata)
 
+    protected fun <PO : ParameterizedObject> objectParam(
+        metadata: ParameterizedObjectParameterMetaData<PO, *>
+    ) = +ParameterizedObjectParameter(this,metadata)
+
     private operator fun <P : Parameter> P.unaryPlus() = apply {
         parameterMap[metaData.key] = this
     }
