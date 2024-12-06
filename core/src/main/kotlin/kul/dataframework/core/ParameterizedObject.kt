@@ -8,10 +8,15 @@ open class ParameterizedObject(
     rootContainer: ParameterContainer<*>? = null
 ) : ParameterContainer<Parameter>(rootContainer) {
 
-    val parameterMap = mutableMapOf<String, Parameter>()
+    protected val parameterMap = mutableMapOf<String, Parameter>()
 
-    override fun get(name: String): Parameter {
-        return parameterMap[name]!!
+    override fun get(name: String): Parameter? {
+        return parameterMap[name]
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <P : Parameter> getParamWithSameType(otherParam: P): P? {
+        return get(otherParam.metaData.key) as? P
     }
 
     override fun iterator() = object : Iterator<Parameter> {
@@ -49,45 +54,41 @@ open class ParameterizedObject(
     protected fun booleanParam(
         metaData: ParameterMetaData,
         initialValue: Boolean = false
-    ) = +BooleanParameter(ownerContainerForParameter, metaData, initialValue)
+    ) = +BooleanParameter(this, metaData, initialValue)
 
     protected fun intParam(
         metaData: ParameterMetaData,
         initialValue: Int = 0,
-    ) = +IntParameter(ownerContainerForParameter, metaData, initialValue)
+    ) = +IntParameter(this, metaData, initialValue)
 
     protected fun floatParam(
         metaData: ParameterMetaData,
         initialValue: Float = 0f
-    ) =  +FloatParameter(ownerContainerForParameter, metaData, initialValue)
+    ) =  +FloatParameter(this, metaData, initialValue)
 
     protected fun longParam(
         metaData: ParameterMetaData,
         initialValue: Long = 0L
-    ) = +LongParameter(ownerContainerForParameter, metaData, initialValue)
+    ) = +LongParameter(this, metaData, initialValue)
 
     protected fun doubleParam(
         metaData: ParameterMetaData,
         initialValue: Double = 0.0
-    ) = +DoubleParameter(ownerContainerForParameter, metaData, initialValue)
+    ) = +DoubleParameter(this, metaData, initialValue)
 
     protected fun <T> param(
         metaData: GenericParameterMetaData<T>,
-        initialValue: T = metaData.genericDefaultValue(ownerContainerForParameter)
-    ) = +GenericParameter(ownerContainerForParameter, metaData, initialValue)
+        initialValue: T = metaData.genericDefaultValue(this)
+    ) = +GenericParameter(this, metaData, initialValue)
 
     protected fun <T : Enum<T>> enumParam(
         metaData: EnumParameterMetadata<T>,
-        initialValue: T = metaData.genericDefaultValue(ownerContainerForParameter),
-    ) = +EnumParameter(ownerContainerForParameter, metaData, initialValue)
+        initialValue: T = metaData.genericDefaultValue(this),
+    ) = +EnumParameter(this, metaData, initialValue)
 
     protected fun <P : Parameter, C : ParameterCollection<P>> collectionParam(
         metadata: CollectionParameterMetaData<P, C, *>,
-    ) = +CollectionParameter(ownerContainerForParameter, metadata)
-
-    // opened for cases when you need create explicit parameter function like an enumParam,
-    // the best way to do that is extensions
-    val ownerContainerForParameter get() = rootContainer ?: this
+    ) = +CollectionParameter(this, metadata)
 
     private operator fun <P : Parameter> P.unaryPlus() = apply {
         parameterMap[metaData.key] = this

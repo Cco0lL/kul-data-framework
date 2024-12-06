@@ -36,6 +36,11 @@ open class GenericParameter<T>(
     override fun copy(ownerContainer: ParameterContainer<*>): GenericParameter<T> =
         GenericParameter(ownerContainer, metaData, value)
 
+    @Suppress("UNCHECKED_CAST")
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as GenericParameter<*>).value as T
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -50,7 +55,7 @@ open class GenericParameter<T>(
 
     override fun hashCode(): Int {
         var result = metaData.hashCode()
-        result = 31 * result + (value.hashCode() ?: 0)
+        result = 31 * result + value.hashCode()
         return result
     }
 

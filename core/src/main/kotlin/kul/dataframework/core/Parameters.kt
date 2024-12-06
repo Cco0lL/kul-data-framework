@@ -36,7 +36,9 @@ open class BooleanParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = BooleanParameter(ownerContainer, metaData, value)
 
-
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as BooleanParameter).value
+    }
 
     override fun toString() = "${metaData.prettyName}: $value"
 
@@ -91,6 +93,10 @@ open class IntParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = IntParameter(ownerContainer, metaData, value)
 
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as IntParameter).value
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -143,6 +149,10 @@ open class FloatParameter(
     }
 
     override fun copy(ownerContainer: ParameterContainer<*>) = FloatParameter(ownerContainer, metaData, value)
+
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as FloatParameter).value
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -197,6 +207,10 @@ open class LongParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = LongParameter(ownerContainer, metaData, value)
 
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as LongParameter).value
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -250,6 +264,10 @@ open class DoubleParameter(
 
     override fun copy(ownerContainer: ParameterContainer<*>) = DoubleParameter(ownerContainer, metaData, value)
 
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as DoubleParameter).value
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -287,18 +305,42 @@ open class EnumParameter<T : Enum<T>>(
         EnumParameter(ownerContainer, metaData, value)
 }
 
+open class ParameterizedObjectParameter<PO : ParameterizedObject>(
+    ownerContainer: ParameterContainer<*>,
+    override val metaData: ParameterizedObjectParameterMetaData<PO, *>
+): GenericParameter<PO>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
+
+    override fun copy(ownerContainer: ParameterContainer<*>): ParameterizedObjectParameter<PO> {
+        return ParameterizedObjectParameter(ownerContainer, metaData)
+            .apply { value = copyValue(this@ParameterizedObjectParameter.value) }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = copyValue((other as ParameterizedObjectParameter<PO>).value)
+    }
+
+    private fun copyValue(obj: PO) = metaData.genericDefaultValue(ownerContainer)
+        .modifyIt { copy ->
+            for (param in obj) {
+                copy.getParamWithSameType(param)!!.readValueFromAnotherParameter(param)
+            }
+        }
+}
+
 open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
     ownerContainer: ParameterContainer<*>,
     override val metaData: CollectionParameterMetaData<P, C, *>,
 ) : GenericParameter<C>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
 
+    @Suppress("UNCHECKED_CAST")
     override fun copy(ownerContainer: ParameterContainer<*>) =
-        CollectionParameter(ownerContainer, metaData).apply {
-            value.modify {
-                for (param in this@CollectionParameter.value) {
-                    @Suppress("UNCHECKED_CAST")
-                    add(param.copy() as P)
-                }
-            }
+        CollectionParameter(ownerContainer, metaData).also { copy ->
+            copy.value = value.copy(ownerContainer) as C
         }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun readValueFromAnotherParameter(other: Parameter) {
+        value = (other as CollectionParameter<P, C>).value.copy(ownerContainer) as C
+    }
 }

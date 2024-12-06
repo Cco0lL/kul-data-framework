@@ -61,7 +61,7 @@ open class EnumParameterMetadata<T : Enum<T>>(
     }
 }
 
-open class ContentItemParameterMetaData<ITEM : ParameterizedObject, ROOT : ParameterContainer<*>>(
+open class ParameterizedObjectParameterMetaData<ITEM : ParameterizedObject, ROOT : ParameterContainer<*>>(
     key: String,
     val contentItemFactory: (ROOT) -> ITEM,
     prettyName: Any = "",

@@ -12,8 +12,8 @@ class ParameterList<P : Parameter>(
 
     override val size get() = backingList.size
 
-    override fun get(name: String): P {
-        return backingList.first { it.metaData.key == name }
+    override fun get(name: String): P? {
+        return backingList.firstOrNull { it.metaData.key == name }
     }
 
     override fun add(param: P) {
@@ -105,8 +105,8 @@ class ParameterMap<P : Parameter>(
 
     override val size get() = backingMap.size
 
-    override fun get(name: String): P {
-        return backingMap[name]!!
+    override fun get(name: String): P? {
+        return backingMap[name]
     }
 
     override fun add(param: P) {
@@ -183,8 +183,8 @@ abstract class ParameterCollection<P : Parameter>(
     abstract val size: Int
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <FUN_P : P> get(universeItem: ParameterUniverse.Item<FUN_P, *>): FUN_P =
-        get(universeItem.metaData.key) as FUN_P
+    operator fun <FUN_P : P> get(universeItem: ParameterUniverse.Item<FUN_P, *>): FUN_P? =
+        get(universeItem.metaData.key) as? FUN_P
 
     operator fun plusAssign(param: P) { add(param) }
     abstract fun add(param: P)
