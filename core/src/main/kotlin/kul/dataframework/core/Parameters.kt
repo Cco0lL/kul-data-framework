@@ -24,12 +24,12 @@ open class BooleanParameter(
         return writeCtx.intElement(if (value) 1 else 0, obj)
     }
 
-    operator fun getValue(thisRef: ParameterizedObject, property: Any?): Boolean {
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Boolean {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: Boolean) {
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Boolean) {
         this.value = value
         runSubscribers()
     }
@@ -81,12 +81,12 @@ open class IntParameter(
         return writeCtx.intElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterizedObject, property: Any?): Int {
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Int {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: Int) {
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Int) {
         this.value = value
         runSubscribers()
     }
@@ -138,12 +138,12 @@ open class FloatParameter(
         return writeCtx.floatElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterizedObject, property: Any?): Float {
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Float {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: Float) {
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Float) {
         this.value = value
         runSubscribers()
     }
@@ -195,12 +195,12 @@ open class LongParameter(
         return writeCtx.longElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterizedObject, property: Any?): Long {
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Long {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: Long) {
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Long) {
         this.value = value
         runSubscribers()
     }
@@ -252,12 +252,12 @@ open class DoubleParameter(
         return writeCtx.doubleElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterizedObject, property: Any?): Double {
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Double {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: Double) {
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Double) {
         this.value = value
         runSubscribers()
     }

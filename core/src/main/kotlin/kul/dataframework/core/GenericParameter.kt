@@ -23,12 +23,12 @@ open class GenericParameter<T>(
         return metaData.toElement(writeCtx, obj, this)
     }
 
-    operator fun getValue(thisRef: ParameterizedObject, property: Any?): T {
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): T {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterizedObject, property: Any?, value: T) {
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: T) {
         this.value = value
         runSubscribers()
     }

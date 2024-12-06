@@ -94,6 +94,8 @@ open class ParameterizedObject(
         metadata: ParameterizedObjectParameterMetaData<PO, *>
     ) = +ParameterizedObjectParameter(this,metadata)
 
+    protected fun <V> param(supplier: () -> GenericParameter<V>) = +supplier()
+
     private operator fun <P : Parameter> P.unaryPlus() = apply {
         parameterMap[metaData.key] = this
     }
