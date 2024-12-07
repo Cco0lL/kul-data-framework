@@ -41,6 +41,8 @@ open class GenericParameter<T>(
         value = (other as GenericParameter<*>).value as T
     }
 
+    override fun toString() = "${metaData.key}: $value"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -58,6 +60,4 @@ open class GenericParameter<T>(
         result = 31 * result + value.hashCode()
         return result
     }
-
-    override fun toString() = "${metaData.prettyName}: $value"
 }

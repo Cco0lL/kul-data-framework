@@ -40,7 +40,7 @@ open class BooleanParameter(
         value = (other as BooleanParameter).value
     }
 
-    override fun toString() = "${metaData.prettyName}: $value"
+    override fun toString() = "${metaData.key}: $value"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -97,6 +97,8 @@ open class IntParameter(
         value = (other as IntParameter).value
     }
 
+    override fun toString() = "${metaData.key}: $value"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -114,8 +116,6 @@ open class IntParameter(
         result = result * 59 + value.hashCode()
         return result
     }
-
-    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class FloatParameter(
@@ -154,6 +154,8 @@ open class FloatParameter(
         value = (other as FloatParameter).value
     }
 
+    override fun toString() = "${metaData.key}: $value"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -171,8 +173,6 @@ open class FloatParameter(
         result = result * 59 + value.hashCode()
         return result
     }
-
-    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class LongParameter(
@@ -211,6 +211,8 @@ open class LongParameter(
         value = (other as LongParameter).value
     }
 
+    override fun toString() = "${metaData.prettyName}: $value"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -228,8 +230,6 @@ open class LongParameter(
         result = result * 59 + value.hashCode()
         return result
     }
-
-    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class DoubleParameter(
@@ -268,6 +268,8 @@ open class DoubleParameter(
         value = (other as DoubleParameter).value
     }
 
+    override fun toString() = "${metaData.prettyName}: $value"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -285,8 +287,6 @@ open class DoubleParameter(
         result = result * 59 + value.hashCode()
         return result
     }
-
-    override fun toString() = "${metaData.prettyName}: $value"
 }
 
 open class EnumParameter<T : Enum<T>>(
