@@ -16,6 +16,10 @@ class ParameterList<P : Parameter>(
         return backingList.firstOrNull { it.metaData.key == name }
     }
 
+    fun get(index: Int): P {
+        return backingList.get(index)
+    }
+
     override fun add(param: P) {
         checkIsModificationsEnabled()
         backingList += param
