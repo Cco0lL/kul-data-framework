@@ -29,7 +29,7 @@ abstract class ParameterContainer<P : Parameter>(
     open fun handleBeforeModifications() {}
     open fun handleAfterModifications() {}
 
-    abstract fun get(name: String): P?
+    abstract fun get(key: String): P?
 
     open fun copy(rootContainer: ParameterContainer<*>? = this.rootContainer): ParameterContainer<P> {
         throw UnsupportedOperationException("Not implemented")

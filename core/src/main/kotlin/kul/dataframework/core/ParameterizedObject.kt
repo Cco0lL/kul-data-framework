@@ -10,8 +10,8 @@ open class ParameterizedObject(
 
     protected val parameterMap = mutableMapOf<String, Parameter>()
 
-    override fun get(name: String): Parameter? {
-        return parameterMap[name]
+    override fun get(key: String): Parameter? {
+        return parameterMap[key]
     }
 
     @Suppress("UNCHECKED_CAST")
