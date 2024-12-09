@@ -72,6 +72,7 @@ class ParameterList<P : Parameter>(
     }
 
     override fun <FUN_P : P> remove(universeItem: ParameterUniverse.Item<FUN_P, out ParameterMetaData>) {
+        checkIsModificationsEnabled()
         if (size == 0) {
             val p1 = backingList[0]
             if (universeItem === universe.getItemNonNull(p1))
@@ -173,7 +174,7 @@ class ParameterMap<P : Parameter>(
         backingMap.remove(universeItem)
     }
 
-    fun containsWithKey(name: String) = backingMap.containsKey(universe.getItemNonNull(name))
+    fun containsWithKey(key: String) = backingMap.containsKey(universe.getItemNonNull(key))
     fun contains(param: P) = backingMap.containsKey(universe.getItemNonNull(param))
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
