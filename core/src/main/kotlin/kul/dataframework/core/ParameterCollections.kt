@@ -245,7 +245,7 @@ abstract class ParameterCollection<P : Parameter>(
 
     operator fun <FUN_P : P> plusAssign(universeItem: ParameterUniverse.Item<FUN_P, out ParameterMetaData>) { add(universeItem) }
     fun <FUN_P : P> add(universeItem: ParameterUniverse.Item<FUN_P, *>, initBlock: (FUN_P.() -> Unit)? = null) {
-        val param = universeItem.createParam(rootContainer ?: this)
+        val param = universeItem.createParam(this)
         initBlock?.run { param.apply(this) }
         add(param)
     }
