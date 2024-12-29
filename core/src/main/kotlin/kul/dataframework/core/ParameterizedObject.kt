@@ -86,6 +86,10 @@ open class ParameterizedObject(
         initialValue: T = metaData.genericDefaultValue(this),
     ) = +EnumParameter(this, metaData, initialValue)
 
+    protected fun stringParam(
+        metaData: StringParameterMetadata,
+    ) = +StringParameter(this, metaData)
+
     protected fun <P : Parameter, C : ParameterCollection<P>> collectionParam(
         metadata: CollectionParameterMetaData<P, C, *>,
     ) = +CollectionParameter(this, metadata)

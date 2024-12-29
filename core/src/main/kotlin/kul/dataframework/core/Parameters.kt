@@ -292,6 +292,11 @@ open class EnumParameter<T : Enum<T>>(
     }
 }
 
+open class StringParameter(
+    ownerContainer: ParameterContainer<*>,
+    override val metaData: StringParameterMetadata,
+): GenericParameter<String>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer))
+
 open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     ownerContainer: ParameterContainer<*>,
     override val metaData: ParameterizedObjectParameterMetaData<PO, *>
