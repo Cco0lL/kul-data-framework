@@ -1,12 +1,24 @@
 package kul.dataframework.core
 
+import java.lang.ref.WeakReference
+
 /**
  * @author Cco0lL created 9/16/24 3:57PM
  **/
 abstract class AbstractParameter(
-    override val ownerContainer: ParameterContainer<*>,
+    ownerContainer: ParameterContainer<*>,
     override val metaData: ParameterMetaData,
 ): Parameter {
+
+    override val ownerContainer: ParameterContainer<*> get() {
+        val ownerContainer = ownerContainerWeakRef.get()
+        if (ownerContainer === null) {
+            throw IllegalStateException("Parameter's lifecycle out of beyond container's lifecycle")
+        }
+        return ownerContainer
+    }
+
+    private val ownerContainerWeakRef = WeakReference(ownerContainer)
 
     //TODO: probably it is better to move to separate implementation
     // and call it like a "ObservableAbstractParameter", but not now

@@ -1,5 +1,6 @@
 package kul.dataframework.core
 
+import java.util.ArrayList
 import java.util.TreeMap
 
 /**
@@ -10,10 +11,9 @@ class ParameterList<P : Parameter>(
     rootContainer: ParameterContainer<*>? = null,
 ) : ParameterCollection<P>(universe, rootContainer) {
 
-    val backingList = arrayListOf<P>()
+    private var backingList = arrayListOf<P>()
 
     override val size get() = backingList.size
-
 
     @Suppress("UNCHECKED_CAST")
     override fun <FUN_P : P> get(universeItem: ParameterUniverse.Item<FUN_P, out ParameterMetaData>): FUN_P? {
@@ -36,37 +36,41 @@ class ParameterList<P : Parameter>(
     }
 
     override fun add(param: P) {
-        checkIsModificationsEnabled()
         addAndReturnIndex(param)
     }
 
     fun addAndReturnIndex(param: P): Int {
         checkIsModificationsEnabled()
+
+        val pi = universe.getItemNonNull(param)
+        val toAdd = if (param.ownerContainer === this) {
+            param
+        } else {
+            pi.createParam(this)
+        }
+
         var i: Int
         val s = size
         if (s == 0) {
-            backingList += param
+            backingList += toAdd
             i = 0
-        } else {
-            val pi = universe.getItemNonNull(param)
-            if (s == 1) {
-                val p1 = backingList[0]
-                val p1o = universe.getItemNonNull(p1)
-                if (pi >= p1o) {
-                    backingList += param
-                    i = 1
-                } else {
-                    backingList.add(0, param)
-                    i = 0
-                }
+        } else if (s == 1) {
+            val p1 = backingList[0]
+            val p1o = universe.getItemNonNull(p1)
+            if (pi >= p1o) {
+                backingList += toAdd
+                i = 1
             } else {
-                i = backingList.binarySearchBy(pi.ordinal) {
-                    universe.ordinalOf(it)
-                }
-                if (i < 0)
-                    i = -(i + 1)
-                backingList.add(i, param)
+                backingList.add(0, toAdd)
+                i = 0
             }
+        } else {
+            i = backingList.binarySearchBy(pi.ordinal) {
+                universe.ordinalOf(it)
+            }
+            if (i < 0)
+                i = -(i + 1)
+            backingList.add(i, toAdd)
         }
         return i
     }
@@ -115,11 +119,14 @@ class ParameterList<P : Parameter>(
         }
     }
 
-    override fun copy(rootContainer: ParameterContainer<*>?): ParameterList<P> {
+    override fun clear(desiredSize: Int) {
+        backingList = ArrayList(desiredSize)
+    }
+
+    override fun copy(): ParameterList<P> {
         return ParameterList(universe, rootContainer).modifyIt {
             for (parameter in this)
-                @Suppress("UNCHECKED_CAST")
-                it += parameter.copy() as P
+                it.add(parameter)
         }
     }
 
@@ -155,7 +162,7 @@ class ParameterMap<P : Parameter>(
     rootContainer: ParameterContainer<*>? = null
 ) : ParameterCollection<P>(universe, rootContainer) {
 
-    private val backingMap = TreeMap<ParameterUniverse.Item<out P, out ParameterMetaData>, P>()
+    private var backingMap = TreeMap<ParameterUniverse.Item<out P, out ParameterMetaData>, P>()
 
     override val size get() = backingMap.size
 
@@ -166,7 +173,13 @@ class ParameterMap<P : Parameter>(
 
     override fun add(param: P) {
         checkIsModificationsEnabled()
-        backingMap[universe.getItemNonNull(param)] = param
+        val item = universe.getItemNonNull(param)
+        if (param.ownerContainer === this) {
+            backingMap[item] = param
+        } else {
+            val copyParam = item.createParam(this)
+            copyParam.readValueFromAnotherParameter(param)
+        }
     }
 
     override fun <FUN_P : P> remove(universeItem: ParameterUniverse.Item<FUN_P, out ParameterMetaData>) {
@@ -195,11 +208,12 @@ class ParameterMap<P : Parameter>(
         )
     }
 
-    override fun copy(rootContainer: ParameterContainer<*>?): ParameterMap<P> {
-        return ParameterMap(universe, rootContainer).modifyIt {
-            for (parameter in this)
-                @Suppress("UNCHECKED_CAST")
-                it += parameter.copy() as P
+    override fun clear(desiredSize: Int) { backingMap.clear() }
+
+    override fun copy(): ParameterMap<P> {
+        val universe = universe
+        return ParameterMap(universe).modifyIt {
+            for (parameter in this) { it.add(parameter) }
         }
     }
 
@@ -257,8 +271,10 @@ abstract class ParameterCollection<P : Parameter>(
     abstract fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT)
     abstract fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT
 
-    override fun copy(rootContainer: ParameterContainer<*>?): ParameterCollection<P> {
-        throw IllegalArgumentException("Not Implemented")
+    abstract fun clear(desiredSize: Int)
+
+    override fun copy(): ParameterCollection<P> {
+        throw UnsupportedOperationException("Not Implemented")
     }
 
     protected abstract fun unwrappedParametersIterator(): MutableIterator<P>

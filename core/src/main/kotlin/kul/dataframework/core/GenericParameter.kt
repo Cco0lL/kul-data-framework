@@ -23,18 +23,15 @@ open class GenericParameter<T>(
         return metaData.toElement(writeCtx, obj, this)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): T {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): T {
         allowSubscribe()
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: T) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: T) {
         this.value = value
         runSubscribers()
     }
-
-    override fun copy(ownerContainer: ParameterContainer<*>): GenericParameter<T> =
-        GenericParameter(ownerContainer, metaData, value)
 
     @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {

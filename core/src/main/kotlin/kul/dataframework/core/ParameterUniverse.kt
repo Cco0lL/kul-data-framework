@@ -19,8 +19,8 @@ class ParameterUniverse<P : Parameter> private constructor(
     fun getItem(key: String) = universe[key]
     fun getItemForParam(parameter: P) = getItem(parameter.metaData.key)
 
-    fun create(key: String, containerOwner: ParameterContainer<*>) =
-        getItemNonNull(key).createParam(containerOwner)
+    fun create(key: String, parameterCollection: ParameterCollection<*>) =
+        getItemNonNull(key).createParam(parameterCollection)
 
     fun ordinalOf(param: P): Int { return getItemNonNull(param).ordinal }
 
@@ -39,17 +39,17 @@ class ParameterUniverse<P : Parameter> private constructor(
     val size get() = universe.size
     override fun iterator() = universe.values.iterator()
 
-    override fun toString() = "universe: ${type}"
+    override fun toString() = "universe: $type"
 
     sealed class Item<P : Parameter, M : ParameterMetaData>(
         val metaData: M,
-        val creator: (ParameterContainer<*>, M) -> P
+        val creator: (ParameterCollection<*>, M) -> P
     ): Comparable<Item<P, out ParameterMetaData>> {
 
         var ordinal = -1
             protected set
 
-        fun createParam(containerOwner: ParameterContainer<*>) = creator(containerOwner, metaData)
+        fun createParam(parameterCollection: ParameterCollection<*>) = creator(parameterCollection, metaData)
 
         override fun compareTo(other: Item<P, out ParameterMetaData>): Int {
             val ordinal = ordinal
@@ -64,7 +64,7 @@ class ParameterUniverse<P : Parameter> private constructor(
 
     private class ItemImpl<P : Parameter, M : ParameterMetaData>(
         metaData: M,
-        creator: (ParameterContainer<*>, M) -> P
+        creator: (ParameterCollection<*>, M) -> P
     ) : Item<P, M>(metaData, creator) {
 
         fun _setOrdinal(value: Int) {

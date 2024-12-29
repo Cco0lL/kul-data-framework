@@ -1,5 +1,6 @@
 package kul.dataframework.core
 
+import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
@@ -9,13 +10,15 @@ typealias ParameterSubscriber = () -> Unit
  * @author Cco0lL created 9/20/24 3:44AM
  **/
 abstract class ParameterContainer<P : Parameter>(
-    protected val rootContainer: ParameterContainer<*>?
+    rootContainer: ParameterContainer<*>?
 ) : Iterable<P> {
 
     private val rwLock = ReentrantReadWriteLock(true)
 
     private val acquireModifyAdder = AtomicInteger()
     private val acquireReadAdder = AtomicInteger()
+
+    internal val rootContainerWeakRef = WeakReference(rootContainer)
 
     var isModifyingNow: Boolean = false
         get() = rootContainer?.run { isModifyingNow } ?: false || acquireModifyAdder.get() != 0
@@ -26,12 +29,14 @@ abstract class ParameterContainer<P : Parameter>(
 
     internal var atomicSubscriber: ParameterSubscriber? = null
 
+    protected val rootContainer get() = rootContainerWeakRef.get()
+
     open fun handleBeforeModifications() {}
     open fun handleAfterModifications() {}
 
     abstract fun get(key: String): P?
 
-    open fun copy(rootContainer: ParameterContainer<*>? = this.rootContainer): ParameterContainer<P> {
+    open fun copy(): ParameterContainer<P> {
         throw UnsupportedOperationException("Not implemented")
     }
 

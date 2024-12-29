@@ -34,8 +34,6 @@ open class BooleanParameter(
         runSubscribers()
     }
 
-    override fun copy(ownerContainer: ParameterContainer<*>) = BooleanParameter(ownerContainer, metaData, value)
-
     override fun readValueFromAnotherParameter(other: Parameter) {
         value = (other as BooleanParameter).value
     }
@@ -90,8 +88,6 @@ open class IntParameter(
         this.value = value
         runSubscribers()
     }
-
-    override fun copy(ownerContainer: ParameterContainer<*>) = IntParameter(ownerContainer, metaData, value)
 
     override fun readValueFromAnotherParameter(other: Parameter) {
         value = (other as IntParameter).value
@@ -148,8 +144,6 @@ open class FloatParameter(
         runSubscribers()
     }
 
-    override fun copy(ownerContainer: ParameterContainer<*>) = FloatParameter(ownerContainer, metaData, value)
-
     override fun readValueFromAnotherParameter(other: Parameter) {
         value = (other as FloatParameter).value
     }
@@ -204,8 +198,6 @@ open class LongParameter(
         this.value = value
         runSubscribers()
     }
-
-    override fun copy(ownerContainer: ParameterContainer<*>) = LongParameter(ownerContainer, metaData, value)
 
     override fun readValueFromAnotherParameter(other: Parameter) {
         value = (other as LongParameter).value
@@ -262,8 +254,6 @@ open class DoubleParameter(
         runSubscribers()
     }
 
-    override fun copy(ownerContainer: ParameterContainer<*>) = DoubleParameter(ownerContainer, metaData, value)
-
     override fun readValueFromAnotherParameter(other: Parameter) {
         value = (other as DoubleParameter).value
     }
@@ -300,9 +290,6 @@ open class EnumParameter<T : Enum<T>>(
     fun set(name: String) {
         value = universe.first { it.name == name }
     }
-
-    override fun copy(ownerContainer: ParameterContainer<*>) =
-        EnumParameter(ownerContainer, metaData, value)
 }
 
 open class ParameterizedObjectParameter<PO : ParameterizedObject>(
@@ -310,22 +297,24 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     override val metaData: ParameterizedObjectParameterMetaData<PO, *>
 ): GenericParameter<PO>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
 
-    override fun copy(ownerContainer: ParameterContainer<*>): ParameterizedObjectParameter<PO> {
-        return ParameterizedObjectParameter(ownerContainer, metaData)
-            .apply { value = copyValue(this@ParameterizedObjectParameter.value) }
-    }
-
     @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {
-        value = copyValue((other as ParameterizedObjectParameter<PO>).value)
+        val anotherParamObject = (other as ParameterizedObjectParameter<PO>).value
+        readAnotherParameterizedObject(anotherParamObject)
     }
 
-    private fun copyValue(obj: PO) = metaData.genericDefaultValue(ownerContainer)
-        .modifyIt { copy ->
-            for (param in obj) {
-                copy.getParamWithSameType(param)!!.readValueFromAnotherParameter(param)
+    override fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
+        readAnotherParameterizedObject(value)
+        runSubscribers()
+    }
+
+    private fun readAnotherParameterizedObject(po: PO) {
+        value.modify {
+            for (param in po) {
+                get(param.metaData.key)!!.readValueFromAnotherParameter(param)
             }
         }
+    }
 }
 
 open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
@@ -334,13 +323,23 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
 ) : GenericParameter<C>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
 
     @Suppress("UNCHECKED_CAST")
-    override fun copy(ownerContainer: ParameterContainer<*>) =
-        CollectionParameter(ownerContainer, metaData).also { copy ->
-            copy.value = value.copy(ownerContainer) as C
-        }
-
-    @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {
-        value = (other as CollectionParameter<P, C>).value.copy(ownerContainer) as C
+        readAnotherParameterCollection((other as CollectionParameter<P, C>).value)
+    }
+
+    override fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
+        readAnotherParameterCollection(value)
+    }
+
+    private fun readAnotherParameterCollection(c: C) {
+        value.modify {
+            clear(desiredSize = c.size)
+            val universe = universe
+            for (param in c) {
+                val copyParam = universe.create(param.metaData.key, this)
+                copyParam.readValueFromAnotherParameter(copyParam)
+                this += copyParam
+            }
+        }
     }
 }

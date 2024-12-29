@@ -15,7 +15,5 @@ interface Parameter {
     fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT)
     fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT
 
-    fun copy(ownerContainer: ParameterContainer<*> = this.ownerContainer): Parameter
-
     fun readValueFromAnotherParameter(other: Parameter)
 }
