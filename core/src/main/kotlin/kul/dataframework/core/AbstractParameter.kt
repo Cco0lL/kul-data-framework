@@ -20,11 +20,8 @@ abstract class AbstractParameter(
 
     private val ownerContainerWeakRef = WeakReference(ownerContainer)
 
-    //TODO: probably it is better to move to separate implementation
-    // and call it like a "ObservableAbstractParameter", but not now
-
     /* ******************* REACTIVITY BEHAVIOR BLOCK ************************ */
-    private val changeSubscribers = mutableListOf<ParameterSubscriber>()
+/*    private val changeSubscribers = mutableListOf<ParameterSubscriber>()
 
     protected fun runSubscribers() {
         for (sub in changeSubscribers)
@@ -32,10 +29,15 @@ abstract class AbstractParameter(
     }
 
     protected fun allowSubscribe() {
-        ownerContainer.atomicSubscriber?.let {
-            changeSubscribers += it
+        val ownerContainer = ownerContainer
+        // it is better to make another implementation of observable parameter but rn it is just an experimental
+        // feature and I don't want to make another implementation
+        if (ownerContainer is ParameterizedObject) {
+            ownerContainer.atomicSubscriber?.let {
+                changeSubscribers += it
+            }
         }
-    }
+    } */
     /* ************************************************************************ */
 
     override fun toString() = "parameter { class: ${this::class.simpleName}, name: ${metaData.key} }"

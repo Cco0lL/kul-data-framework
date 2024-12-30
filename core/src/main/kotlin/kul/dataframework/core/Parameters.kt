@@ -25,13 +25,13 @@ open class BooleanParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Boolean {
-        allowSubscribe()
+//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Boolean) {
         this.value = value
-        runSubscribers()
+//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -80,13 +80,13 @@ open class IntParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Int {
-        allowSubscribe()
+//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Int) {
         this.value = value
-        runSubscribers()
+//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -135,13 +135,13 @@ open class FloatParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Float {
-        allowSubscribe()
+//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Float) {
         this.value = value
-        runSubscribers()
+//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -190,13 +190,13 @@ open class LongParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Long {
-        allowSubscribe()
+//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Long) {
         this.value = value
-        runSubscribers()
+//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -245,13 +245,13 @@ open class DoubleParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Double {
-        allowSubscribe()
+ //       allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Double) {
         this.value = value
-        runSubscribers()
+//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -310,7 +310,7 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
 
     override fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
         readAnotherParameterizedObject(value)
-        runSubscribers()
+        //runSubscribers()
     }
 
     private fun readAnotherParameterizedObject(po: PO) {
@@ -334,6 +334,7 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
 
     override fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
         readAnotherParameterCollection(value)
+//        runSubscribers()
     }
 
     private fun readAnotherParameterCollection(c: C) {

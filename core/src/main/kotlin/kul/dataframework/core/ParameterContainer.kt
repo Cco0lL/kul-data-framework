@@ -4,7 +4,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-typealias ParameterSubscriber = () -> Unit
+//typealias ParameterSubscriber = () -> Unit
 
 /**
  * @author Cco0lL created 9/20/24 3:44AM
@@ -27,7 +27,7 @@ abstract class ParameterContainer<P : Parameter>(
         get() = rootContainer?.run { isReadingNow } ?: false || acquireReadAdder.get() != 0
         private set
 
-    internal var atomicSubscriber: ParameterSubscriber? = null
+//    internal var atomicSubscriber: ParameterSubscriber? = null
 
     protected val rootContainer get() = rootContainerWeakRef.get()
 
@@ -41,7 +41,7 @@ abstract class ParameterContainer<P : Parameter>(
     }
 
     // inspired by https://github.com/bendgk/effekt
-    fun subscribe(sub: ParameterSubscriber) {
+/*    fun subscribe(sub: ParameterSubscriber) {
         check(atomicSubscriber === null) {
             "can't invoke ParameterContainer#subscribe() inside another subscribe block"
         }
@@ -56,13 +56,9 @@ abstract class ParameterContainer<P : Parameter>(
             atomicSubscriber = null
             rwLock.writeLock().unlock()
         }
-    }
+    } */
 
     fun enableModifications() {
-//        if (isModifyingNow) {
-//            throw IllegalStateException("redundant ModifiableItem#enableModifications() call")
-//        }
-
         rwLock.writeLock().lock()
         acquireModifyAdder.incrementAndGet()
         try {
@@ -75,12 +71,6 @@ abstract class ParameterContainer<P : Parameter>(
     }
 
     fun disableModifications() {
-//        if (!isModifyingNow) {
-//            throw IllegalStateException("redundant ModifiableItem#disableModifications() call")
-//        }
-
-//        isModifyingNow = false
-
         try {
             handleAfterModifications()
         } finally {
@@ -98,7 +88,6 @@ abstract class ParameterContainer<P : Parameter>(
     fun releaseRead() {
         acquireReadAdder.decrementAndGet()
         rwLock.readLock().unlock()
-//        isReadingNow = false
     }
 
     fun checkIsModificationsEnabled() {

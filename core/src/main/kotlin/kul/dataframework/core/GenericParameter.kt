@@ -24,13 +24,13 @@ open class GenericParameter<T>(
     }
 
     open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): T {
-        allowSubscribe()
+//        allowSubscribe()
         return value
     }
 
     open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: T) {
         this.value = value
-        runSubscribers()
+//        runSubscribers()
     }
 
     @Suppress("UNCHECKED_CAST")
