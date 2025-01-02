@@ -274,7 +274,7 @@ open class EnumParameter<T : Enum<T>>(
 
 open class StringParameter(
     override val metaData: ParameterMetaData,
-    initialValue: String,
+    initialValue: String = "-",
 ): GenericParameter<String>(metaData, initialValue) {
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT, ) {
