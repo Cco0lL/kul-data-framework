@@ -291,7 +291,10 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     initialValue: PO
 ): Parameter(metaData) {
 
-    val value = initialValue
+    var value = initialValue
+        set(value) {
+            readValueFromAnotherObject(value)
+        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value.modify { read(readCtx, readCtx.elementAsObject(element)) }
@@ -308,7 +311,7 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
-        readValueFromAnotherObject(value)
+        this.value = value
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -326,7 +329,10 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
     initialValue: C
 ) : Parameter(metaData) {
 
-    val value = initialValue
+    var value = initialValue
+        set(value) {
+            readValueFromAnotherCollection(value)
+        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value.modify { read(readCtx, element) }
@@ -342,7 +348,7 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
-        readValueFromAnotherCollection(value)
+        this.value = value
     }
 
     @Suppress("UNCHECKED_CAST")
