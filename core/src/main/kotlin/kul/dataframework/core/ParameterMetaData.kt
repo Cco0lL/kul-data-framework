@@ -47,3 +47,20 @@ open class ParameterMetaData(
         return result
     }
 }
+
+open class EnumParameterMetadata<T : Enum<T>>(
+    key: String,
+    enumUniverse: Array<T>,
+    prettyName: Any = "",
+    description: List<Any> = emptyList()
+) : ParameterMetaData(key, prettyName, description) {
+
+    val enumUniverse = listOf(*enumUniverse)
+}
+
+open class CollectionParameterMetaData<P : Parameter>(
+    key: String,
+    val parameterUniverse: ParameterUniverse<P>,
+    prettyName: Any = "",
+    description: List<Any> = emptyList()
+): ParameterMetaData(key, prettyName, description)

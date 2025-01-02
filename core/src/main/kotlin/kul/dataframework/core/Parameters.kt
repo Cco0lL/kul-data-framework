@@ -1,19 +1,16 @@
 package kul.dataframework.core
 
+import java.util.*
+
 /**
  * @author Cco0lL created 9/20/24 10:09PM
  **/
 open class BooleanParameter(
-    ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
     initialValue: Boolean = false,
-) : AbstractParameter(ownerContainer, metaData) {
+) : Parameter(metaData) {
 
-    var value = initialValue
-        set(value) {
-            ownerContainer.checkIsModificationsEnabled()
-            field = value
-        }
+    open var value = initialValue
 
     //FIXME: add boolean read and write methods in contexts
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
@@ -25,13 +22,11 @@ open class BooleanParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Boolean {
-//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Boolean) {
         this.value = value
-//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -60,16 +55,11 @@ open class BooleanParameter(
 }
 
 open class IntParameter(
-    ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
     initialValue: Int = 0,
-) : AbstractParameter(ownerContainer, metaData) {
+) : Parameter(metaData) {
 
-    var value = initialValue
-        set(value) {
-            ownerContainer.checkIsModificationsEnabled()
-            field = value
-        }
+    open var value = initialValue
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsInt(element)
@@ -80,13 +70,11 @@ open class IntParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Int {
-//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Int) {
         this.value = value
-//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -115,16 +103,11 @@ open class IntParameter(
 }
 
 open class FloatParameter(
-    ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
     initialValue: Float = 0f,
-) : AbstractParameter(ownerContainer, metaData) {
+) : Parameter(metaData) {
 
-    var value = initialValue
-        set(value) {
-            ownerContainer.checkIsModificationsEnabled()
-            field = value
-        }
+    open var value = initialValue
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsFloat(element)
@@ -135,13 +118,11 @@ open class FloatParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Float {
-//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Float) {
         this.value = value
-//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -170,16 +151,11 @@ open class FloatParameter(
 }
 
 open class LongParameter(
-    ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
     initialValue: Long = 0L,
-) : AbstractParameter(ownerContainer, metaData) {
+) : Parameter(metaData) {
 
-    var value = initialValue
-        set(value) {
-            ownerContainer.checkIsModificationsEnabled()
-            field = value
-        }
+    open var value = initialValue
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsLong(element)
@@ -190,13 +166,11 @@ open class LongParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Long {
-//        allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Long) {
         this.value = value
-//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -225,16 +199,11 @@ open class LongParameter(
 }
 
 open class DoubleParameter(
-    ownerContainer: ParameterContainer<*>,
     metaData: ParameterMetaData,
     initialValue: Double = 0.0,
-) : AbstractParameter(ownerContainer, metaData) {
+) : Parameter(metaData) {
 
-    var value = initialValue
-        set(value) {
-            ownerContainer.checkIsModificationsEnabled()
-            field = value
-        }
+    open var value = initialValue
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsDouble(element)
@@ -245,13 +214,11 @@ open class DoubleParameter(
     }
 
     operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Double {
- //       allowSubscribe()
         return value
     }
 
     operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Double) {
         this.value = value
-//        runSubscribers()
     }
 
     override fun readValueFromAnotherParameter(other: Parameter) {
@@ -280,12 +247,25 @@ open class DoubleParameter(
 }
 
 open class EnumParameter<T : Enum<T>>(
-    ownerContainer: ParameterContainer<*>,
     override val metaData: EnumParameterMetadata<T>,
     initialValue: T = metaData.enumUniverse[0],
-) : GenericParameter<T>(ownerContainer, metaData, initialValue) {
+) : GenericParameter<T>(metaData, initialValue) {
 
     val universe get() = metaData.enumUniverse
+
+    override fun <ELEMENT, OBJECT> read(
+        readCtx: ReadContext<ELEMENT, OBJECT>,
+        element: ELEMENT,
+    ) {
+        value = readCtx.elementAsEnum(element, metaData.enumUniverse)
+    }
+
+    override fun <ELEMENT, OBJECT> toElement(
+        writeCtx: WriteContext<ELEMENT, OBJECT>,
+        obj: OBJECT,
+    ): ELEMENT {
+        return writeCtx.enumElement(value, obj)
+    }
 
     fun set(name: String) {
         value = universe.first { it.name == name }
@@ -293,59 +273,125 @@ open class EnumParameter<T : Enum<T>>(
 }
 
 open class StringParameter(
-    ownerContainer: ParameterContainer<*>,
-    override val metaData: StringParameterMetadata,
-): GenericParameter<String>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer))
+    override val metaData: ParameterMetaData,
+    initialValue: String,
+): GenericParameter<String>(metaData, initialValue) {
+
+    override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT, ) {
+        value = readCtx.elementAsString(element)
+    }
+
+    override fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT, ): ELEMENT {
+        return writeCtx.stringElement(value, obj)
+    }
+}
 
 open class ParameterizedObjectParameter<PO : ParameterizedObject>(
-    ownerContainer: ParameterContainer<*>,
-    override val metaData: ParameterizedObjectParameterMetaData<PO, *>
-): GenericParameter<PO>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
+    override val metaData: ParameterMetaData,
+    initialValue: PO
+): Parameter(metaData) {
+
+    val value = initialValue
+
+    override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
+        value.modify { read(readCtx, readCtx.elementAsObject(element)) }
+    }
+
+    override fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT {
+        val itemObject = writeCtx.createChildObject(obj)
+        value.read { write(writeCtx, itemObject) }
+        return writeCtx.objectAsElement(itemObject)
+    }
+
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): PO {
+        return value
+    }
+
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
+        readValueFromAnotherObject(value)
+    }
 
     @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {
-        val anotherParamObject = (other as ParameterizedObjectParameter<PO>).value
-        readAnotherParameterizedObject(anotherParamObject)
+        readValueFromAnotherObject((other as ParameterizedObjectParameter<PO>).value)
     }
 
-    override fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
-        readAnotherParameterizedObject(value)
-        //runSubscribers()
-    }
-
-    private fun readAnotherParameterizedObject(po: PO) {
-        value.modify {
-            for (param in po) {
-                get(param.metaData.key)!!.readValueFromAnotherParameter(param)
-            }
-        }
+    private fun readValueFromAnotherObject(other: PO) {
+        value.modify { read(other) }
     }
 }
 
 open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
-    ownerContainer: ParameterContainer<*>,
-    override val metaData: CollectionParameterMetaData<P, C, *>,
-) : GenericParameter<C>(ownerContainer, metaData, metaData.genericDefaultValue(ownerContainer)) {
+    override val metaData: CollectionParameterMetaData<P>,
+    initialValue: C
+) : Parameter(metaData) {
+
+    val value = initialValue
+
+    override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
+        value.modify { read(readCtx, element) }
+    }
+
+    override fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT {
+        val collectionObject = writeCtx.createChildObject(obj)
+        return value.read { toElement(writeCtx, collectionObject) }
+    }
+
+    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): C {
+        return value
+    }
+
+    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
+        readValueFromAnotherCollection(value)
+    }
 
     @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {
-        readAnotherParameterCollection((other as CollectionParameter<P, C>).value)
+        readValueFromAnotherCollection((other as CollectionParameter<P, C>).value)
     }
 
-    override fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
-        readAnotherParameterCollection(value)
-//        runSubscribers()
+    private fun readValueFromAnotherCollection(other: C) {
+        value.modify { read(other) }
+    }
+}
+
+open class ListParameter<P : Parameter>(
+    metaData: CollectionParameterMetaData<P>,
+    initialValue: ParameterList<P> = ParameterList(metaData.parameterUniverse)
+): CollectionParameter<P, ParameterList<P>>(metaData, initialValue)
+
+open class MapParameter<P : Parameter>(
+    metaData: CollectionParameterMetaData<P>,
+    initialValue: ParameterMap<P> = ParameterMap(metaData.parameterUniverse)
+): CollectionParameter<P, ParameterMap<P>>(metaData, initialValue)
+
+open class UUIDParameter(
+    metaData: ParameterMetaData,
+    initialValue: UUID = ZERO_VALUE
+): GenericParameter<UUID>(metaData, initialValue) {
+
+    override fun <ELEMENT, OBJECT> read(
+        readCtx: ReadContext<ELEMENT, OBJECT>,
+        element: ELEMENT,
+    ) {
+        val asObject = readCtx.elementAsObject(element)
+        val most = readCtx.readLong("most", asObject)
+        val least = readCtx.readLong("least", asObject)
+        value = if (most == 0L && least == 0L) ZERO_VALUE else UUID(most, least)
     }
 
-    private fun readAnotherParameterCollection(c: C) {
-        value.modify {
-            clear(desiredSize = c.size)
-            val universe = universe
-            for (param in c) {
-                val copyParam = universe.create(param.metaData.key, this)
-                copyParam.readValueFromAnotherParameter(copyParam)
-                this += copyParam
-            }
-        }
+    override fun <ELEMENT, OBJECT> toElement(
+        writeCtx: WriteContext<ELEMENT, OBJECT>,
+        obj: OBJECT,
+    ): ELEMENT {
+        val value = this.value
+        val objectOf = writeCtx.createChildObject(obj)
+        writeCtx.writeLong("most", objectOf, value.mostSignificantBits)
+        writeCtx.writeLong("least", objectOf, value.leastSignificantBits)
+        return writeCtx.objectAsElement(objectOf)
+    }
+
+    companion object {
+        val ZERO_VALUE = UUID(0, 0)
     }
 }

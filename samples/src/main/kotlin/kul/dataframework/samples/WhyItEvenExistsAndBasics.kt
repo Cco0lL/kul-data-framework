@@ -1,6 +1,8 @@
 package kul.dataframework.samples
 
 import kul.dataframework.core.*
+import kul.dataframework.core.reactive.ObservableStringParameter
+import kul.dataframework.core.reactive.watch
 import kul.dataframework.serialization.gson.readJson
 import kul.dataframework.serialization.gson.toJson
 
@@ -8,14 +10,16 @@ import kul.dataframework.serialization.gson.toJson
  * @author Cco0lL created 11/29/24 8:19PM
  **/
 
-class PartOfSomethingNew: ParameterizedObject() {
+class PartOfSomethingNew: ParameterizedObject(3) {
 
-    var somePieceOfBeauty by param(BeautyMeta, "even after the darkest night comes the dawn")
-    var magicNumber by longParam(MagicNumMeta, 0xC001C0DE)
+    var somePieceOfBeauty by +StringParameter(BeautyMeta, "even after the darkest night comes the dawn")
+    var magicNumber by +LongParameter(MagicNumMeta, 0xC001C0DE)
+    var reactiveMagicField by +ObservableStringParameter(ReactiveMagicField, "woah that's a magic")
 
     companion object {
-        val BeautyMeta = StringParameterMetadata("somePieceOfBeauty")
+        val BeautyMeta = ParameterMetaData("somePieceOfBeauty")
         val MagicNumMeta = ParameterMetaData("position")
+        val ReactiveMagicField = ParameterMetaData("reactiveMagicField")
     }
 }
 
@@ -28,23 +32,33 @@ fun main() {
     }
 
     //if you need more control of modification scope, you can use this case
-    partOfSomethingNew.enableModifications()
+    partOfSomethingNew.startModifyFence()
     try {
         partOfSomethingNew.magicNumber = 0xC01DBABE
     } finally {
-        partOfSomethingNew.disableModifications()
+        partOfSomethingNew.stopModifyFence()
     }
 
     partOfSomethingNew.modify {
         somePieceOfBeauty = "wealth or knowledge..... so whats you gonna take?"
     }
 
+    //reactivity example
+    partOfSomethingNew.watch {
+        println(reactiveMagicField) // will print "woah that's a magic"
+    }
+
+    partOfSomethingNew.modify {
+        reactiveMagicField = "or not? :thinking:" // will print "or not? :thinking:"
+    }
+
+
     //serialization example
     val jsonObject = partOfSomethingNew.toJson()
     println(jsonObject.toString())
     val partOfSomethingNew2 = PartOfSomethingNew().readJson(jsonObject)
 
-    partOfSomethingNew2.acquireRead {
+    partOfSomethingNew2.read {
         println(somePieceOfBeauty)
         println(magicNumber)
     }

@@ -1,38 +1,16 @@
 package kul.dataframework.core
 
-import java.lang.ref.WeakReference
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.locks.ReentrantReadWriteLock
-
-//typealias ParameterSubscriber = () -> Unit
-
 /**
  * @author Cco0lL created 9/20/24 3:44AM
  **/
-abstract class ParameterContainer<P : Parameter>(
-    rootContainer: ParameterContainer<*>?
-) : Iterable<P> {
+abstract class ParameterContainer<P : Parameter> : Iterable<P> {
 
-    private val rwLock = ReentrantReadWriteLock(true)
-
-    private val acquireModifyAdder = AtomicInteger()
-    private val acquireReadAdder = AtomicInteger()
-
-    internal val rootContainerWeakRef = WeakReference(rootContainer)
-
-    var isModifyingNow: Boolean = false
-        get() = rootContainer?.run { isModifyingNow } ?: false || acquireModifyAdder.get() != 0
-        private set
-    var isReadingNow: Boolean = false
-        get() = rootContainer?.run { isReadingNow } ?: false || acquireReadAdder.get() != 0
-        private set
-
-//    internal var atomicSubscriber: ParameterSubscriber? = null
-
-    protected val rootContainer get() = rootContainerWeakRef.get()
-
-    open fun handleBeforeModifications() {}
-    open fun handleAfterModifications() {}
+    /**
+     * Scopes of operations can be recursive, but every usage of fences always has effects
+     * (if they have effects themselves). Scope counter helps define primary scope and put
+     * fences only at entry modify fence
+     */
+    protected var modifyScopeCounter = 0
 
     abstract fun get(key: String): P?
 
@@ -40,93 +18,60 @@ abstract class ParameterContainer<P : Parameter>(
         throw UnsupportedOperationException("Not implemented")
     }
 
-    // inspired by https://github.com/bendgk/effekt
-/*    fun subscribe(sub: ParameterSubscriber) {
-        check(atomicSubscriber === null) {
-            "can't invoke ParameterContainer#subscribe() inside another subscribe block"
+    protected open fun handleBeforeModifications() {}
+    protected open fun handleAfterModifications() {}
+
+    /**
+     * Fences describe the scope of operations that should be happened in a part of code.
+     * Explicit fences of read or modify scopes allow to provide special effects when it
+     * needed (multithreaded synchronization/handlers/transactional behavior, and e.t.c)
+     */
+
+    open fun startModifyFence() {
+        if (++modifyScopeCounter == 1) { //entry fence
+            try {
+                handleAfterModifications()
+            } catch (th: Throwable) {
+                modifyScopeCounter--
+                //rethrowing to interrupt operation scope
+                throw th
+            }
         }
-//        check(!(isModifyingNow || isReadingNow)) {
-//            "can't invoke ParameterContainer#subscribe() because reading or modifying block are running"
-//        }
-        rwLock.writeLock().lock()
-        atomicSubscriber = sub
+    }
+
+    open fun stopModifyFence() {
         try {
-            sub()
+            if (modifyScopeCounter == 1) { //exit fence
+                handleAfterModifications()
+            }
         } finally {
-            atomicSubscriber = null
-            rwLock.writeLock().unlock()
-        }
-    } */
-
-    fun enableModifications() {
-        rwLock.writeLock().lock()
-        acquireModifyAdder.incrementAndGet()
-        try {
-            handleBeforeModifications()
-        } catch (th: Throwable) {
-            acquireModifyAdder.decrementAndGet()
-            rwLock.writeLock().unlock()
-            throw th
+            modifyScopeCounter--
         }
     }
 
-    fun disableModifications() {
-        try {
-            handleAfterModifications()
-        } finally {
-            acquireModifyAdder.decrementAndGet()
-            rwLock.writeLock().unlock()
-        }
-    }
+    open fun startReadFence() {}
+    open fun stopReadFence() {}
 
-    fun acquireRead() {
-//        isReadingNow = true
-        rwLock.readLock().lock()
-        acquireReadAdder.incrementAndGet()
-    }
-
-    fun releaseRead() {
-        acquireReadAdder.decrementAndGet()
-        rwLock.readLock().unlock()
-    }
-
-    fun checkIsModificationsEnabled() {
-        if (!isModifyingNow)
-            throw IllegalStateException("Attempt to modify parameter container with disabled modifications")
-    }
 }
 
-inline fun <P : Parameter, C : ParameterContainer<P>, R> C.acquireRead(readBlock: C.() -> R): R = run {
-    if (isModifyingNow || isReadingNow) {
-        //don't need to acquire read in modify block or when it is a nested block
+inline fun <P : Parameter, C : ParameterContainer<P>, R> C.read(readBlock: C.() -> R): R = run {
+    startReadFence()
+    try {
         readBlock(this)
-    } else {
-        acquireRead()
-        try {
-            readBlock(this)
-        } finally {
-            releaseRead()
-        }
+    } finally {
+        stopReadFence()
     }
 }
 
-fun <P : Parameter, C : ParameterContainer<P>, R> C.acquireReadIt(readBlock: (C) -> R) =
-    acquireRead(readBlock)
+fun <P : Parameter, C : ParameterContainer<P>, R> C.readIt(readBlock: (C) -> R) =
+    read(readBlock)
 
 inline fun <P : Parameter, C : ParameterContainer<P>> C.modify(modifyBlock: C.() -> Unit) = apply {
-//    if (isReadingNow) {
-//        throw IllegalArgumentException("Can't be modified while read has been acquired")
-//    }
-    if (isModifyingNow) {
-       //nested block, passing without preparations and special code
-       modifyBlock(this)
-    } else {
-        enableModifications()
-        try {
-            modifyBlock(this)
-        } finally {
-            disableModifications()
-        }
+    startModifyFence()
+    try {
+        modifyBlock(this)
+    } finally {
+        stopModifyFence()
     }
 }
 
