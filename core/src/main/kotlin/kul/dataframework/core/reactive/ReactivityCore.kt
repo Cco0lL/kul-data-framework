@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock
 typealias ParameterSubscriber = () -> Unit
 
 /**
- * the locking mechanism was saved from the original library to avoid some overhead of publish/subscribe
+ * the locking mechanism was saved from the original library to avoid some overhead of subscribe
  * lookups of current atomic subscriber, but, unlike the original library, it is possible to make atomic
  * subscriber per parameterized object instance if this part of code became to a bottleneck with negative
  * effects
@@ -30,13 +30,9 @@ var atomicSubscriber: ParameterSubscriber? = null
 fun <PO : ParameterizedObject> PO.watch(update: PO.() -> Unit) {
     lock.lock()
     try {
-
-        val currentAtomicSubscriber = atomicSubscriber
-
         //if lock fence is passed and atomic subscriber is defined then it
         // means inner invocation of watch() function, which is not allowed
-        check(currentAtomicSubscriber === null) { "watch() invocation is not allowed in update block" }
-
+        check(atomicSubscriber === null) { "watch() invocation is not allowed in update block" }
         val subscriber: ParameterSubscriber = { update(this) }
         read {
             atomicSubscriber = subscriber

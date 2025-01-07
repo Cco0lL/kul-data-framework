@@ -66,7 +66,7 @@ class ParameterList<P : Parameter>(
         return i
     }
 
-    override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>) {
+    override fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) {
         if (size == 0) {
             val p1 = backingList[0]
             if (universeItem === universe.getItemNonNull(p1))
@@ -162,12 +162,9 @@ class ParameterMap<P : Parameter>(
         backingMap[item] = param
     }
 
-    override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>) {
+    override fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) {
         backingMap.remove(universeItem)
     }
-
-    fun contains(param: P) = backingMap.containsKey(universe.getItemNonNull(param))
-    fun contains(item: ParameterUniverseItem<out P, out ParameterMetaData>) = backingMap.containsKey(item)
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         readCtx.elementAsMap(
@@ -233,18 +230,22 @@ abstract class ParameterCollection<P : Parameter>(
     operator fun plusAssign(param: P) { add(param) }
     abstract fun add(param: P)
 
-    operator fun <FUN_P : P> plusAssign(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>) { add(universeItem) }
+    operator fun plusAssign(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) { add(universeItem) }
     fun <FUN_P : P> add(universeItem: ParameterUniverseItem<FUN_P, *>, initBlock: (FUN_P.() -> Unit)? = null) {
         val param = universeItem.createParam()
         initBlock?.run { param.apply(this) }
         add(param)
     }
 
-    operator fun minusAssign(universeItem: ParameterUniverseItem<P, out ParameterMetaData>) { remove(universeItem) }
-    abstract fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>)
+    operator fun minusAssign(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) { remove(universeItem) }
+    abstract fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>)
     fun remove(key: String) { remove(universe.getItemNonNull(key)) }
 
-    //time complexity for neither list and map is O(n*log(n))
+    open fun contains(key: String) = contains(universe.getItemNonNull(key))
+    open fun contains(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) =
+        get(universeItem) != null
+
+    //time complexity for both list and map is O(n*log(n))
     fun read(other: ParameterCollection<P>, needClearBeforeRead: Boolean = true) {
         val universe = universe
         assert(universe == other.universe) {
