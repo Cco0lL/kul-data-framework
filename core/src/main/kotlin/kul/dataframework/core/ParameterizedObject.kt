@@ -9,8 +9,9 @@ open class ParameterizedObject(amountOfParameters: Int) : ParameterContainer<Par
     private var nextParameterCursor = 0
     protected val parameters = arrayOfNulls<Parameter>(amountOfParameters)
 
-    override fun get(key: String): Parameter? {
-        return parameters.first { it?.metaData?.key == key }
+    override operator fun <FUN_P : Parameter> get(key: String): FUN_P? {
+        @Suppress("UNCHECKED_CAST")
+        return parameters.first { it?.metaData?.key == key } as FUN_P
     }
 
     protected fun <P : Parameter> add(parameter: P): P {
@@ -24,11 +25,6 @@ open class ParameterizedObject(amountOfParameters: Int) : ParameterContainer<Par
 
     protected operator fun <P : Parameter> P.unaryPlus() = add(this)
 
-    @Suppress("UNCHECKED_CAST")
-    fun <P : Parameter> getParamWithSameType(otherParam: P): P? {
-        return get(otherParam.metaData.key) as? P
-    }
-
     fun read(other: ParameterizedObject) {
         other.readIt {
             if (other.javaClass.isInstance(javaClass)) {
@@ -40,11 +36,11 @@ open class ParameterizedObject(amountOfParameters: Int) : ParameterContainer<Par
                    parameters[i]!!.readValueFromAnotherParameter(otherParameters[i]!!)
                 }
             } else {
-                //layout is undefined otherwise and before every parameter's read need to find
+                //the layout is undefined otherwise and before every parameter's read need to find
                 // the parameter that equals to current one and time complexity becomes to O(n^2)
                 for (parameter in parameters) {
                    parameter!!
-                   val otherParameter = other.get(parameter.metaData.key)
+                   val otherParameter = other.get<Parameter>(parameter.metaData.key)
                    if (otherParameter !== null) {
                        parameter.readValueFromAnotherParameter(otherParameter)
                    }

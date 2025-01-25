@@ -13,15 +13,15 @@ open class ObservableBooleanParameter(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: Boolean = initialValue
+    override var value: Boolean
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }
@@ -34,15 +34,15 @@ open class ObservableIntParameter(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: Int = initialValue
+    override var value: Int
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }
@@ -55,15 +55,15 @@ open class ObservableFloatParameter(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: Float = initialValue
+    override var value: Float
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }
@@ -76,15 +76,15 @@ open class ObservableLongParameter(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: Long = initialValue
+    override var value: Long
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }
@@ -97,15 +97,15 @@ open class ObservableDoubleParameter(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: Double = initialValue
+    override var value: Double
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }
@@ -118,15 +118,15 @@ open class ObservableStringParameter(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: String = initialValue
+    override var value: String
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }
@@ -139,15 +139,15 @@ open class ObservableEnumParameter<T : Enum<T>>(
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
-    override var value: T = initialValue
+    override var value: T
         get() {
             val atomicSubscriber = atomicSubscriber
             if (atomicSubscriber !== null)
                 subscribers.add(atomicSubscriber)
-            return field
+            return super.value
         }
         set(value) {
-            field = value
+            super.value = value
             for (subscriber in subscribers)
                 subscriber()
         }

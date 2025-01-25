@@ -39,6 +39,7 @@ class ParameterList<P : Parameter>(
     }
 
     fun addAndReturnIndex(param: P): Int {
+        checkEnabledModifications()
         val pi = universe.getItemNonNull(param)
         var i: Int
         val s = size
@@ -67,6 +68,7 @@ class ParameterList<P : Parameter>(
     }
 
     override fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) {
+        checkEnabledModifications()
         if (size == 0) {
             val p1 = backingList[0]
             if (universeItem === universe.getItemNonNull(p1))
@@ -81,10 +83,12 @@ class ParameterList<P : Parameter>(
     }
 
     fun remove(index: Int) {
+        checkEnabledModifications()
         backingList.removeAt(index)
     }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
+        checkEnabledModifications()
         readCtx.elementAsCollection(
             element,
             { backingList },
@@ -117,7 +121,7 @@ class ParameterList<P : Parameter>(
         }
     }
 
-    override fun iterator(): MutableIterator<P> {
+    override fun backingIterator(): MutableIterator<P> {
         return backingList.iterator()
     }
 
@@ -158,15 +162,18 @@ class ParameterMap<P : Parameter>(
     }
 
     override fun add(param: P) {
+        checkEnabledModifications()
         val item = universe.getItemNonNull(param)
         backingMap[item] = param
     }
 
     override fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) {
+        checkEnabledModifications()
         backingMap.remove(universeItem)
     }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
+        checkEnabledModifications()
         readCtx.elementAsMap(
             element,
             { backingMap },
@@ -191,7 +198,7 @@ class ParameterMap<P : Parameter>(
         }
     }
 
-    override fun iterator(): Iterator<P> {
+    override fun backingIterator(): MutableIterator<P> {
         return backingMap.values.iterator()
     }
 
@@ -222,9 +229,11 @@ abstract class ParameterCollection<P : Parameter>(
     val universe: ParameterUniverse<P>,
 ) : ParameterContainer<P>() {
 
+    private var canModify = true
     abstract val size: Int
 
-    override operator fun get(key: String) = get(universe.getItemNonNull(key))
+    @Suppress("UNCHECKED_CAST")
+    override operator fun <FUN_P : P> get(key: String) = get(universe.getItemNonNull(key)) as FUN_P
     abstract operator fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>): FUN_P?
 
     operator fun plusAssign(param: P) { add(param) }
@@ -245,8 +254,19 @@ abstract class ParameterCollection<P : Parameter>(
     open fun contains(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) =
         get(universeItem) != null
 
+    override fun enableModifications() {
+        canModify = true
+        super.enableModifications()
+    }
+
+    override fun disableModifications() {
+        canModify = false
+        super.disableModifications()
+    }
+
     //time complexity for both list and map is O(n*log(n))
     fun read(other: ParameterCollection<P>, needClearBeforeRead: Boolean = true) {
+        checkEnabledModifications()
         val universe = universe
         assert(universe == other.universe) {
             "can't read from collection, universe of which is different"
@@ -258,6 +278,24 @@ abstract class ParameterCollection<P : Parameter>(
             val newParameter = universe.getItemNonNull(parameter).createParam()
             newParameter.readValueFromAnotherParameter(parameter)
             add(newParameter)
+        }
+    }
+
+    protected abstract fun backingIterator(): MutableIterator<P>
+    override fun iterator() = object : MutableIterator<P> {
+        val backingIterator = backingIterator()
+        override fun hasNext() = backingIterator.hasNext()
+        override fun next() = backingIterator.next()
+        override fun remove() {
+            checkEnabledModifications()
+            backingIterator.remove()
+        }
+    }
+
+    protected fun checkEnabledModifications() {
+        if (!canModify) {
+            throw UnsupportedOperationException("modifications are disabled. set canModify = true to make sure" +
+                    " it wasn't mistake")
         }
     }
 

@@ -11,6 +11,12 @@ open class BooleanParameter(
 ) : Parameter(metaData) {
 
     open var value = initialValue
+        set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
+            field = value
+        }
 
     //FIXME: add boolean read and write methods in contexts
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
@@ -60,6 +66,12 @@ open class IntParameter(
 ) : Parameter(metaData) {
 
     open var value = initialValue
+        set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
+            field = value
+        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsInt(element)
@@ -108,6 +120,12 @@ open class FloatParameter(
 ) : Parameter(metaData) {
 
     open var value = initialValue
+        set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
+            field = value
+        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsFloat(element)
@@ -156,6 +174,12 @@ open class LongParameter(
 ) : Parameter(metaData) {
 
     open var value = initialValue
+        set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
+            field = value
+        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsLong(element)
@@ -204,6 +228,12 @@ open class DoubleParameter(
 ) : Parameter(metaData) {
 
     open var value = initialValue
+        set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
+            field = value
+        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsDouble(element)
@@ -291,8 +321,18 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     initialValue: PO
 ): Parameter(metaData) {
 
+    override var canModifyValue: Boolean
+        get() = super.canModifyValue
+        set(value) {
+            super.canModifyValue = value
+            this.value.disableModifications()
+        }
+
     var value = initialValue
         set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
             readValueFromAnotherObject(value)
         }
 
@@ -329,8 +369,18 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
     initialValue: C
 ) : Parameter(metaData) {
 
+    override var canModifyValue: Boolean
+        get() = super.canModifyValue
+        set(value) {
+            super.canModifyValue = value
+            this.value.disableModifications()
+        }
+
     var value = initialValue
         set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
             readValueFromAnotherCollection(value)
         }
 

@@ -9,6 +9,12 @@ abstract class GenericParameter<T>(
 ) : Parameter(metaData) {
 
     open var value = initialValue
+        set(value) {
+            if (!canModifyValue) {
+                throw UnsupportedOperationException(messageIfModificationDisabled())
+            }
+            field = value
+        }
 
     open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): T {
         return value

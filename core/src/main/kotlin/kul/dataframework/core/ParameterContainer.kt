@@ -6,13 +6,17 @@ package kul.dataframework.core
 abstract class ParameterContainer<P : Parameter> : Iterable<P> {
 
     /**
-     * Scopes of operations can be recursive, but every usage of fences always has effects
-     * (if they have effects themselves). Scope counter helps define primary scope and put
-     * fences only at entry modify fence
+     * Scopes of the operations can be recursive, but every usage of fences always has effects
+     * (if they have effects themselves). The scope counter helps define the primary scope and
+     * put the fences only at the entry modify fence
      */
     protected var modifyScopeCounter = 0
 
-    abstract fun get(key: String): P?
+    abstract fun <FUN_P : P> get(key: String): FUN_P?
+
+    fun <FUN_P : P> get(metaData: ParameterMetaData): FUN_P? {
+        return get(metaData.key)
+    }
 
     open fun copy(): ParameterContainer<P> {
         throw UnsupportedOperationException("Not implemented")
@@ -20,6 +24,18 @@ abstract class ParameterContainer<P : Parameter> : Iterable<P> {
 
     protected open fun handleBeforeModifications() {}
     protected open fun handleAfterModifications() {}
+
+    open fun disableModifications() {
+        for (param in this) {
+            param.canModifyValue = false
+        }
+    }
+
+    open fun enableModifications() {
+        for (param in this) {
+            param.canModifyValue = true
+        }
+    }
 
     /**
      * Fences describe the scope of operations that should be happened in a part of code.

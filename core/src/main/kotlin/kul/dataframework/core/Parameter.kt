@@ -7,6 +7,12 @@ abstract class Parameter(
     open val metaData: ParameterMetaData,
 ) {
 
+    open var canModifyValue = true
+
+    open fun messageIfModificationDisabled() =
+        "modifications are disabled for parameter with key \"${metaData.key}\". Set canModifyValue = true" +
+                " for parameter to make sure it wasn't mistake"
+
     abstract fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT)
     abstract fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT
 
