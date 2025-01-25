@@ -21,11 +21,11 @@ open class BooleanParameter(
         return writeCtx.intElement(if (value) 1 else 0, obj)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Boolean {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Boolean {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Boolean) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Boolean) {
         this.value = value
     }
 
@@ -69,11 +69,11 @@ open class IntParameter(
         return writeCtx.intElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Int {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Int {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Int) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Int) {
         this.value = value
     }
 
@@ -117,11 +117,11 @@ open class FloatParameter(
         return writeCtx.floatElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Float {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Float {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Float) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Float) {
         this.value = value
     }
 
@@ -165,11 +165,11 @@ open class LongParameter(
         return writeCtx.longElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Long {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Long {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Long) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Long) {
         this.value = value
     }
 
@@ -213,11 +213,11 @@ open class DoubleParameter(
         return writeCtx.doubleElement(value, obj)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Double {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Double {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Double) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Double) {
         this.value = value
     }
 
@@ -306,11 +306,11 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
         return writeCtx.objectAsElement(itemObject)
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): PO {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): PO {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
         this.value = value
     }
 
@@ -343,11 +343,11 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
         return value.read { toElement(writeCtx, collectionObject) }
     }
 
-    operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): C {
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): C {
         return value
     }
 
-    operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
         this.value = value
     }
 
