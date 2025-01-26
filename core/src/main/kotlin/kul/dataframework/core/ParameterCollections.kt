@@ -6,16 +6,16 @@ import java.util.TreeMap
 /**
  * @author Cco0lL created 9/26/24 3:27AM
  **/
-class ParameterList<P : Parameter>(
-    universe: ParameterUniverse<P>,
-) : ParameterCollection<P>(universe) {
+@Suppress("UNCHECKED_CAST")
+class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<out P, *>>(
+    universe: ParameterUniverse<P, I>,
+) : ParameterCollection<P, I>(universe) {
 
     private var backingList = arrayListOf<P>()
 
     override val size get() = backingList.size
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>): FUN_P? {
+    override fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, *>): FUN_P? {
         if (size == 0) {
             val p1 = backingList[0]
             if (universeItem === universe.getItemNonNull(p1))
@@ -67,19 +67,20 @@ class ParameterList<P : Parameter>(
         return i
     }
 
-    override fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) {
+    override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P, *>): FUN_P? {
         checkEnabledModifications()
         if (size == 0) {
             val p1 = backingList[0]
             if (universeItem === universe.getItemNonNull(p1))
-                backingList.removeAt(0)
+               return backingList.removeAt(0) as FUN_P
         } else {
             val i = backingList.binarySearchBy(universeItem.ordinal) {
                 universe.ordinalOf(it)
             }
             if (i >= 0)
-                backingList.removeAt(i)
+               return backingList.removeAt(i) as FUN_P
         }
+        return null
     }
 
     fun remove(index: Int) {
@@ -115,9 +116,15 @@ class ParameterList<P : Parameter>(
         backingList = ArrayList(desiredSize)
     }
 
-    override fun copy(): ParameterList<P> {
-        return ParameterList(universe).modifyIt {
+    override fun copy(): ParameterDictionary<P, I> {
+        return ParameterDictionary(universe).modifyIt {
             it.read(this, needClearBeforeRead = false)
+        }
+    }
+
+    override fun forEachWithItems(action: (I, P) -> Unit) {
+        for (param in backingList) {
+            action(universe.getItemNonNull(param), param)
         }
     }
 
@@ -129,7 +136,7 @@ class ParameterList<P : Parameter>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ParameterList<*>
+        other as ParameterDictionary<*, *>
 
         if (universe != other.universe) return false
         if (backingList != other.backingList) return false
@@ -148,17 +155,17 @@ class ParameterList<P : Parameter>(
     }
 }
 
-class ParameterMap<P : Parameter>(
-    universe: ParameterUniverse<P>,
-) : ParameterCollection<P>(universe) {
+@Suppress("UNCHECKED_CAST")
+class ParameterMap<P : Parameter, I : ParameterUniverseItem<out P, *>>(
+    universe: ParameterUniverse<P, I>,
+) : ParameterCollection<P, I>(universe) {
 
-    private val backingMap = TreeMap<ParameterUniverseItem<out P, out ParameterMetaData>, P>()
+    private val backingMap = TreeMap<I, P>()
 
     override val size get() = backingMap.size
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>): FUN_P? {
-        return backingMap[universeItem] as? FUN_P
+    override fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, *>): FUN_P? {
+        return backingMap[universeItem as I] as? FUN_P
     }
 
     override fun add(param: P) {
@@ -167,9 +174,9 @@ class ParameterMap<P : Parameter>(
         backingMap[item] = param
     }
 
-    override fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) {
+    override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P, *>): FUN_P? {
         checkEnabledModifications()
-        backingMap.remove(universeItem)
+        return backingMap.remove(universeItem as I) as? FUN_P
     }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
@@ -192,9 +199,15 @@ class ParameterMap<P : Parameter>(
 
     override fun clear(desiredSize: Int) { backingMap.clear() }
 
-    override fun copy(): ParameterMap<P> {
+    override fun copy(): ParameterMap<P, I> {
         return ParameterMap(universe).modifyIt {
             it.read(this, needClearBeforeRead = false)
+        }
+    }
+
+    override fun forEachWithItems(action: (I, P) -> Unit) {
+        for (entry in backingMap.entries) {
+            action(entry.key, entry.value)
         }
     }
 
@@ -206,7 +219,7 @@ class ParameterMap<P : Parameter>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ParameterMap<*>
+        other as ParameterMap<*, *>
 
         if (backingMap != other.backingMap) return false
         if (universe != other.universe) return false
@@ -225,33 +238,33 @@ class ParameterMap<P : Parameter>(
     }
 }
 
-abstract class ParameterCollection<P : Parameter>(
-    val universe: ParameterUniverse<P>,
+@Suppress("UNCHECKED_CAST")
+abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<out P, *>>(
+    val universe: ParameterUniverse<P, I>,
 ) : ParameterContainer<P>() {
 
     private var canModify = true
     abstract val size: Int
 
-    @Suppress("UNCHECKED_CAST")
     override operator fun <FUN_P : P> get(key: String) = get(universe.getItemNonNull(key)) as FUN_P
-    abstract operator fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, out ParameterMetaData>): FUN_P?
+    abstract operator fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P, *>): FUN_P?
 
     operator fun plusAssign(param: P) { add(param) }
     abstract fun add(param: P)
 
-    operator fun plusAssign(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) { add(universeItem) }
+    operator fun plusAssign(universeItem: ParameterUniverseItem<out P, *>) { add(universeItem) }
     fun <FUN_P : P> add(universeItem: ParameterUniverseItem<FUN_P, *>, initBlock: (FUN_P.() -> Unit)? = null) {
         val param = universeItem.createParam()
         initBlock?.run { param.apply(this) }
         add(param)
     }
 
-    operator fun minusAssign(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) { remove(universeItem) }
-    abstract fun remove(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>)
-    fun remove(key: String) { remove(universe.getItemNonNull(key)) }
+    operator fun minusAssign(universeItem: ParameterUniverseItem<out P, *>) { remove(universeItem) }
+    abstract fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P, *>): FUN_P?
+    fun remove(key: String): P? { return remove(universe.getItemNonNull(key)) }
 
     open fun contains(key: String) = contains(universe.getItemNonNull(key))
-    open fun contains(universeItem: ParameterUniverseItem<out P, out ParameterMetaData>) =
+    open fun contains(universeItem: ParameterUniverseItem<out P, *>) =
         get(universeItem) != null
 
     override fun enableModifications() {
@@ -265,7 +278,7 @@ abstract class ParameterCollection<P : Parameter>(
     }
 
     //time complexity for both list and map is O(n*log(n))
-    fun read(other: ParameterCollection<P>, needClearBeforeRead: Boolean = true) {
+    fun read(other: ParameterCollection<P, I>, needClearBeforeRead: Boolean = true) {
         checkEnabledModifications()
         val universe = universe
         assert(universe == other.universe) {
@@ -280,6 +293,8 @@ abstract class ParameterCollection<P : Parameter>(
             add(newParameter)
         }
     }
+
+    abstract fun forEachWithItems(action: (I, P) -> Unit)
 
     protected abstract fun backingIterator(): MutableIterator<P>
     override fun iterator() = object : MutableIterator<P> {
@@ -304,7 +319,7 @@ abstract class ParameterCollection<P : Parameter>(
 
     abstract fun clear(desiredSize: Int)
 
-    override fun copy(): ParameterCollection<P> {
+    override fun copy(): ParameterCollection<P, I> {
         throw UnsupportedOperationException("Not Implemented")
     }
 

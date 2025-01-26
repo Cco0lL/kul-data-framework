@@ -3,10 +3,10 @@ package kul.dataframework.core
 /**
  * @author Cco0lL created 9/22/24 5:08PM
  **/
-class ParameterUniverse<P : Parameter> private constructor(
+class ParameterUniverse<P : Parameter, I : ParameterUniverseItem<out P, *>> private constructor(
     val type: String,
-    private val universe: Map<String, ParameterUniverseItem<out P, out ParameterMetaData>>
-): Iterable<ParameterUniverseItem<out P, *>> {
+    private val universe: Map<String, I>
+): Iterable<I> {
 
     init {
         for ((index, item) in universe.values.withIndex()) {
@@ -14,19 +14,17 @@ class ParameterUniverse<P : Parameter> private constructor(
         }
     }
 
+    fun <FUN_P : P> getItem(parameter: P) = getItem(parameter.metaData.key)
     fun getItem(key: String) = universe[key]
-    fun getItemForParam(parameter: P) = getItem(parameter.metaData.key)
 
-    fun create(key: String) =
-        getItemNonNull(key).createParam()
+    fun create(key: String): P = getItemNonNull(key).createParam()
 
-    fun ordinalOf(param: P): Int { return getItemNonNull(param).ordinal }
+    fun ordinalOf(param: P): Int {
+        return getItemNonNull(param).ordinal
+    }
 
-    @Suppress("UNCHECKED_CAST")
-    fun <FUN_P : P> getItemNonNull(param: FUN_P) =
-        getItemNonNull(param.metaData.key) as ParameterUniverseItem<FUN_P, out ParameterMetaData>
-
-    fun getItemNonNull(key: String): ParameterUniverseItem<out P, out ParameterMetaData> {
+    fun getItemNonNull(param: P) = getItemNonNull(param.metaData.key)
+    fun getItemNonNull(key: String): I {
         val item = universe[key]
         if (item === null) {
             throw IllegalArgumentException("$key is not in $universe")
@@ -40,9 +38,9 @@ class ParameterUniverse<P : Parameter> private constructor(
     override fun toString() = "universe: $type"
 
     companion object {
-        fun <P : Parameter> of(
+        fun <P : Parameter, I : ParameterUniverseItem<out P, *>> of(
             type: String,
-            vararg items: ParameterUniverseItem<out P, out ParameterMetaData>
+            vararg items: I
         ) = ParameterUniverse(type, items.associateBy { it.metaData.key })
     }
 }

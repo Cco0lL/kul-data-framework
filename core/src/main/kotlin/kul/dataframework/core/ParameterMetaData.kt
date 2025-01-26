@@ -58,9 +58,9 @@ open class EnumParameterMetadata<T : Enum<T>>(
     val enumUniverse = listOf(*enumUniverse)
 }
 
-open class CollectionParameterMetaData<P : Parameter>(
+open class CollectionParameterMetaData<P : Parameter, I : ParameterUniverseItem<out P, *>>(
     key: String,
-    val parameterUniverse: ParameterUniverse<P>,
+    val parameterUniverse: ParameterUniverse<P, I>,
     prettyName: Any = "",
     description: List<Any> = emptyList()
 ): ParameterMetaData(key, prettyName, description)

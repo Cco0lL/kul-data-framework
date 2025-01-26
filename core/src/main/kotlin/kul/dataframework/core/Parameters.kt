@@ -364,8 +364,8 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     }
 }
 
-open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
-    override val metaData: CollectionParameterMetaData<P>,
+open class CollectionParameter<P : Parameter, I : ParameterUniverseItem<out P, *>, C : ParameterCollection<P, I>>(
+    override val metaData: CollectionParameterMetaData<P, I>,
     initialValue: C
 ) : Parameter(metaData) {
 
@@ -403,7 +403,7 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
 
     @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {
-        readValueFromAnotherCollection((other as CollectionParameter<P, C>).value)
+        readValueFromAnotherCollection((other as CollectionParameter<P, I, C>).value)
     }
 
     private fun readValueFromAnotherCollection(other: C) {
@@ -411,15 +411,15 @@ open class CollectionParameter<P : Parameter, C : ParameterCollection<P>>(
     }
 }
 
-open class ListParameter<P : Parameter>(
-    metaData: CollectionParameterMetaData<P>,
-    initialValue: ParameterList<P> = ParameterList(metaData.parameterUniverse)
-): CollectionParameter<P, ParameterList<P>>(metaData, initialValue)
+open class DictionaryParameter<P : Parameter, I : ParameterUniverseItem<out P, *>>(
+    metaData: CollectionParameterMetaData<P, I>,
+    initialValue: ParameterDictionary<P, I> = ParameterDictionary(metaData.parameterUniverse)
+): CollectionParameter<P, I, ParameterDictionary<P, I>>(metaData, initialValue)
 
-open class MapParameter<P : Parameter>(
-    metaData: CollectionParameterMetaData<P>,
-    initialValue: ParameterMap<P> = ParameterMap(metaData.parameterUniverse)
-): CollectionParameter<P, ParameterMap<P>>(metaData, initialValue)
+open class MapParameter<P : Parameter, I : ParameterUniverseItem<out P, *>>(
+    metaData: CollectionParameterMetaData<P, I>,
+    initialValue: ParameterMap<P, I> = ParameterMap(metaData.parameterUniverse)
+): CollectionParameter<P, I, ParameterMap<P, I>>(metaData, initialValue)
 
 open class UUIDParameter(
     metaData: ParameterMetaData,
