@@ -328,7 +328,7 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
             this.value.disableModifications()
         }
 
-    var value = initialValue
+    open var value = initialValue
         set(value) {
             if (!canModifyValue) {
                 throw UnsupportedOperationException(messageIfModificationDisabled())
@@ -376,7 +376,7 @@ open class CollectionParameter<P : Parameter, I : ParameterUniverseItem<out P, *
             this.value.disableModifications()
         }
 
-    var value = initialValue
+    open var value = initialValue
         set(value) {
             if (!canModifyValue) {
                 throw UnsupportedOperationException(messageIfModificationDisabled())
