@@ -1,6 +1,7 @@
 package kul.dataframework.samples
 
 import kul.dataframework.core.*
+import kul.dataframework.core.reactive.ObservableFloatParameter
 import kul.dataframework.core.reactive.ObservableStringParameter
 import kul.dataframework.core.reactive.watch
 import kul.dataframework.serialization.gson.readJson
@@ -10,10 +11,10 @@ import kul.dataframework.serialization.gson.toJson
  * @author Cco0lL created 11/29/24 8:19PM
  **/
 
-class PartOfSomethingNew: ParameterizedObject(3) {
+class PartOfSomethingNew: ParameterizedObject() {
 
     var somePieceOfBeauty by +StringParameter(BeautyMeta, "even after the darkest night comes the dawn")
-    var magicNumber by +LongParameter(MagicNumMeta, 0xC001C0DE)
+    var magicNumber by +ObservableFloatParameter(MagicNumMeta, 0f)
     var reactiveMagicField by +ObservableStringParameter(ReactiveMagicField, "woah that's a magic")
 
     companion object {
@@ -31,10 +32,14 @@ fun main() {
         somePieceOfBeauty = "you will never find something beauty in me, i just have an ugly soul"
     }
 
+    partOfSomethingNew.watch {
+        println(magicNumber)
+    }
+
     //if you need more control of modification scope, you can use this case
     partOfSomethingNew.startModifyFence()
     try {
-        partOfSomethingNew.magicNumber = 0xC01DBABE
+        partOfSomethingNew.magicNumber = 10f
     } finally {
         partOfSomethingNew.stopModifyFence()
     }
@@ -51,7 +56,6 @@ fun main() {
     partOfSomethingNew.modify {
         reactiveMagicField = "or not? :thinking:" // will print "or not? :thinking:"
     }
-
 
     //serialization example
     val jsonObject = partOfSomethingNew.toJson()
