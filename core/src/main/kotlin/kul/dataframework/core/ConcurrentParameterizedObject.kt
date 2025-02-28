@@ -5,9 +5,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 /**
  * @author Cco0lL created 1/1/25 11:45PM
  **/
-open class ConcurrentParameterizedObject(
-    amountOfParameters: Int,
-) : ParameterizedObject(amountOfParameters) {
+open class ConcurrentParameterizedObject : ParameterizedObject() {
 
     private val rwLock = ReentrantReadWriteLock(true)
 
