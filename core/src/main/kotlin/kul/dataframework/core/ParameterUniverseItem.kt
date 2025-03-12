@@ -1,10 +1,9 @@
 package kul.dataframework.core
 
-open class ParameterUniverseItem<P : Parameter, M : ParameterMetaData>(
-    val metaData: M,
-    val creator: (M) -> P
-): Comparable<ParameterUniverseItem<*, *>> {
+open class ParameterUniverseItem<out P : Parameter>(val creator: () -> P): Comparable<ParameterUniverseItem<*>> {
 
+    lateinit var name: String
+        internal set
     var ordinal = -1
         private set
 
@@ -13,9 +12,9 @@ open class ParameterUniverseItem<P : Parameter, M : ParameterMetaData>(
         ordinal = value
     }
 
-    fun createParam() = creator(metaData)
+    fun createParam() = creator().apply { name = this@ParameterUniverseItem.name }
 
-    override fun compareTo(other: ParameterUniverseItem<*, *>): Int {
+    override fun compareTo(other: ParameterUniverseItem<*>): Int {
         val ordinal = ordinal
         val otherOrdinal = other.ordinal
         return when {
@@ -24,4 +23,17 @@ open class ParameterUniverseItem<P : Parameter, M : ParameterMetaData>(
             else -> 0
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as ParameterUniverseItem<*>
+        return ordinal == other.ordinal
+    }
+
+    override fun hashCode(): Int {
+        return ordinal
+    }
+
+    override fun toString() = "type: \"${this::class.simpleName}\", name: \"$name\""
 }

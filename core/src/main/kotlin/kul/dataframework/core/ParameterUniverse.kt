@@ -1,29 +1,35 @@
 package kul.dataframework.core
 
+import kotlin.reflect.KProperty
+
 /**
  * @author Cco0lL created 9/22/24 5:08PM
  **/
-class ParameterUniverse<P : Parameter, I : ParameterUniverseItem<out P, *>> private constructor(
-    val type: String,
-    private val universe: Map<String, I>
-): Iterable<I> {
+open class ParameterUniverse<out P : Parameter, I : ParameterUniverseItem<P>>(val key: String): Iterable<I> {
 
-    init {
-        for ((index, item) in universe.values.withIndex()) {
-            item._setOrdinal(index)
-        }
+    private val universe: MutableMap<String, I> = LinkedHashMap(2, 1f)
+
+    operator fun <FUN_I : I> FUN_I.provideDelegate(
+        thisRef: ParameterUniverse<@UnsafeVariance P, I>,
+        property: KProperty<*>
+    ): FUN_I {
+        this.name = property.name
+        _setOrdinal(thisRef.size)
+        thisRef.universe[name] = this
+        return this
     }
 
-    fun <FUN_P : P> getItem(parameter: P) = getItem(parameter.metaData.key)
+    operator fun <FUN_I : I> FUN_I.getValue(
+        thisRef: ParameterUniverse<*, *>,
+        property: KProperty<*>
+    ): FUN_I { return this }
+
+    fun getItem(parameter: @UnsafeVariance P) = getItem(parameter.name)
     fun getItem(key: String) = universe[key]
 
     fun create(key: String): P = getItemNonNull(key).createParam()
 
-    fun ordinalOf(param: P): Int {
-        return getItemNonNull(param).ordinal
-    }
-
-    fun getItemNonNull(param: P) = getItemNonNull(param.metaData.key)
+    fun getItemNonNull(param: @UnsafeVariance P) = getItemNonNull(param.name)
     fun getItemNonNull(key: String): I {
         val item = universe[key]
         if (item === null) {
@@ -33,14 +39,8 @@ class ParameterUniverse<P : Parameter, I : ParameterUniverseItem<out P, *>> priv
     }
 
     val size get() = universe.size
+
     override fun iterator() = universe.values.iterator()
 
-    override fun toString() = "universe: $type"
-
-    companion object {
-        fun <P : Parameter, I : ParameterUniverseItem<out P, *>> of(
-            type: String,
-            vararg items: I
-        ) = ParameterUniverse(type, items.associateBy { it.metaData.key })
-    }
+    override fun toString() = "universe: $key"
 }

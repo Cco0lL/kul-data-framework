@@ -1,26 +1,28 @@
 package kul.dataframework.core
 
+import kotlin.reflect.KProperty
+
 /**
  * @author Cco0lL created 11/25/24 5:46AM
  **/
-abstract class GenericParameter<T>(
-    override val metaData: ParameterMetaData,
-    initialValue: T
-) : Parameter(metaData) {
+abstract class GenericParameter<T>(initialValue: T) : Parameter() {
 
     open var value = initialValue
-        set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
-            field = value
-        }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): T {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): GenericParameter<T> {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): T {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: T) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: T) {
         this.value = value
     }
 
@@ -29,23 +31,5 @@ abstract class GenericParameter<T>(
         value = (other as GenericParameter<*>).value as T
     }
 
-    override fun toString() = "${metaData.key}: $value"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as GenericParameter<*>
-
-        if (metaData != other.metaData) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.hashCode()
-        result = 31 * result + value.hashCode()
-        return result
-    }
+    override fun toString() = "${this::class.simpleName}: $value"
 }

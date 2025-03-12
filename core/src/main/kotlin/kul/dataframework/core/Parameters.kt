@@ -1,22 +1,15 @@
 package kul.dataframework.core
 
 import java.util.*
+import kotlin.enums.EnumEntries
+import kotlin.reflect.KProperty
 
 /**
  * @author Cco0lL created 9/20/24 10:09PM
  **/
-open class BooleanParameter(
-    metaData: ParameterMetaData,
-    initialValue: Boolean = false,
-) : Parameter(metaData) {
+open class BooleanParameter(initialValue: Boolean = false) : Parameter() {
 
     open var value = initialValue
-        set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
-            field = value
-        }
 
     //FIXME: add boolean read and write methods in contexts
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
@@ -27,11 +20,20 @@ open class BooleanParameter(
         return writeCtx.intElement(if (value) 1 else 0, obj)
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Boolean {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): BooleanParameter {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): Boolean {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Boolean) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: Boolean) {
         this.value = value
     }
 
@@ -39,39 +41,19 @@ open class BooleanParameter(
         value = (other as BooleanParameter).value
     }
 
-    override fun toString() = "${metaData.key}: $value"
+    override fun toString() = "${this::class.simpleName}: $value"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-
         other as BooleanParameter
-
-        if (metaData != other.metaData) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.hashCode()
-        result = result * 59 + value.hashCode()
-        return result
+        return value == other.value
     }
 }
 
-open class IntParameter(
-    metaData: ParameterMetaData,
-    initialValue: Int = 0,
-) : Parameter(metaData) {
+open class IntParameter(initialValue: Int = 0) : Parameter() {
 
     open var value = initialValue
-        set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
-            field = value
-        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsInt(element)
@@ -81,11 +63,20 @@ open class IntParameter(
         return writeCtx.intElement(value, obj)
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Int {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): IntParameter {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): Int {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Int) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: Int) {
         this.value = value
     }
 
@@ -93,39 +84,12 @@ open class IntParameter(
         value = (other as IntParameter).value
     }
 
-    override fun toString() = "${metaData.key}: $value"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as IntParameter
-
-        if (metaData != other.metaData) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.hashCode()
-        result = result * 59 + value.hashCode()
-        return result
-    }
+    override fun toString() = "${this::class.simpleName}: $value"
 }
 
-open class FloatParameter(
-    metaData: ParameterMetaData,
-    initialValue: Float = 0f,
-) : Parameter(metaData) {
+open class FloatParameter(initialValue: Float = 0f) : Parameter() {
 
     open var value = initialValue
-        set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
-            field = value
-        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsFloat(element)
@@ -135,11 +99,20 @@ open class FloatParameter(
         return writeCtx.floatElement(value, obj)
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Float {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): FloatParameter {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): Float {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Float) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: Float) {
         this.value = value
     }
 
@@ -147,39 +120,12 @@ open class FloatParameter(
         value = (other as FloatParameter).value
     }
 
-    override fun toString() = "${metaData.key}: $value"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as FloatParameter
-
-        if (metaData != other.metaData) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.hashCode()
-        result = result * 59 + value.hashCode()
-        return result
-    }
+    override fun toString() = "${this::class.simpleName}: $value"
 }
 
-open class LongParameter(
-    metaData: ParameterMetaData,
-    initialValue: Long = 0L,
-) : Parameter(metaData) {
+open class LongParameter(initialValue: Long = 0L) : Parameter() {
 
     open var value = initialValue
-        set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
-            field = value
-        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsLong(element)
@@ -189,11 +135,20 @@ open class LongParameter(
         return writeCtx.longElement(value, obj)
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Long {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): LongParameter {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): Long {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Long) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: Long) {
         this.value = value
     }
 
@@ -201,39 +156,12 @@ open class LongParameter(
         value = (other as LongParameter).value
     }
 
-    override fun toString() = "${metaData.prettyName}: $value"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as LongParameter
-
-        if (metaData != other.metaData) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.hashCode()
-        result = result * 59 + value.hashCode()
-        return result
-    }
+    override fun toString() = "${this::class.simpleName}: $value"
 }
 
-open class DoubleParameter(
-    metaData: ParameterMetaData,
-    initialValue: Double = 0.0,
-) : Parameter(metaData) {
+open class DoubleParameter(initialValue: Double = 0.0): Parameter() {
 
     open var value = initialValue
-        set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
-            field = value
-        }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsDouble(element)
@@ -243,11 +171,20 @@ open class DoubleParameter(
         return writeCtx.doubleElement(value, obj)
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): Double {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): DoubleParameter {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): Double {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: Double) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: Double) {
         this.value = value
     }
 
@@ -255,39 +192,19 @@ open class DoubleParameter(
         value = (other as DoubleParameter).value
     }
 
-    override fun toString() = "${metaData.prettyName}: $value"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as DoubleParameter
-
-        if (metaData != other.metaData) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = metaData.hashCode()
-        result = result * 59 + value.hashCode()
-        return result
-    }
+    override fun toString() = "${this::class.simpleName}: $value"
 }
 
 open class EnumParameter<T : Enum<T>>(
-    override val metaData: EnumParameterMetadata<T>,
-    initialValue: T = metaData.enumUniverse[0],
-) : GenericParameter<T>(metaData, initialValue) {
-
-    val universe get() = metaData.enumUniverse
+    val enumEntries: EnumEntries<T>,
+    initialValue: T = enumEntries[0],
+) : GenericParameter<T>(initialValue) {
 
     override fun <ELEMENT, OBJECT> read(
         readCtx: ReadContext<ELEMENT, OBJECT>,
         element: ELEMENT,
     ) {
-        value = readCtx.elementAsEnum(element, metaData.enumUniverse)
+        value = readCtx.elementAsEnum(element, enumEntries)
     }
 
     override fun <ELEMENT, OBJECT> toElement(
@@ -298,41 +215,25 @@ open class EnumParameter<T : Enum<T>>(
     }
 
     fun set(name: String) {
-        value = universe.first { it.name == name }
+        value = enumEntries.first { it.name == name }
     }
 }
 
-open class StringParameter(
-    override val metaData: ParameterMetaData,
-    initialValue: String = "-",
-): GenericParameter<String>(metaData, initialValue) {
+open class StringParameter(initialValue: String = "-"): GenericParameter<String>(initialValue) {
 
-    override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT, ) {
+    override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
         value = readCtx.elementAsString(element)
     }
 
-    override fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT, ): ELEMENT {
+    override fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT {
         return writeCtx.stringElement(value, obj)
     }
 }
 
-open class ParameterizedObjectParameter<PO : ParameterizedObject>(
-    override val metaData: ParameterMetaData,
-    initialValue: PO
-): Parameter(metaData) {
-
-    override var canModifyValue: Boolean
-        get() = super.canModifyValue
-        set(value) {
-            super.canModifyValue = value
-            this.value.disableModifications()
-        }
+open class ParameterizedObjectParameter<PO : ParameterizedObject>(initialValue: PO): Parameter() {
 
     open var value = initialValue
         set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
             readValueFromAnotherObject(value)
         }
 
@@ -346,11 +247,20 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
         return writeCtx.objectAsElement(itemObject)
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): PO {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): ParameterizedObjectParameter<PO> {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): PO {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: PO) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: PO) {
         this.value = value
     }
 
@@ -362,25 +272,18 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(
     private fun readValueFromAnotherObject(other: PO) {
         value.modify { read(other) }
     }
+
+    override fun toString() = "${this::class.simpleName}: $value"
+
 }
 
-open class CollectionParameter<P : Parameter, I : ParameterUniverseItem<out P, *>, C : ParameterCollection<P, I>>(
-    override val metaData: CollectionParameterMetaData<P, I>,
+open class ParameterCollectionParameter<P : Parameter, I : ParameterUniverseItem<P>, C : ParameterCollection<P, I>>(
+    val parameterUniverse: ParameterUniverse<P, *>,
     initialValue: C
-) : Parameter(metaData) {
-
-    override var canModifyValue: Boolean
-        get() = super.canModifyValue
-        set(value) {
-            super.canModifyValue = value
-            this.value.disableModifications()
-        }
+) : Parameter() {
 
     open var value = initialValue
         set(value) {
-            if (!canModifyValue) {
-                throw UnsupportedOperationException(messageIfModificationDisabled())
-            }
             readValueFromAnotherCollection(value)
         }
 
@@ -393,38 +296,46 @@ open class CollectionParameter<P : Parameter, I : ParameterUniverseItem<out P, *
         return value.read { toElement(writeCtx, collectionObject) }
     }
 
-    open operator fun getValue(thisRef: ParameterContainer<*>, property: Any?): C {
+    open operator fun provideDelegate(thisRef: ParameterContainer<*>, property: KProperty<*>): ParameterCollectionParameter<P, I, C> {
+        if (thisRef !is ParameterizedObject) {
+            throw IllegalArgumentException("can't be used as delegate of that property")
+        }
+        name = property.name
+        thisRef._injectParameter(this)
+        return this
+    }
+
+    open operator fun getValue(thisRef: ParameterContainer<*>, property: KProperty<*>): C {
         return value
     }
 
-    open operator fun setValue(thisRef: ParameterContainer<*>, property: Any?, value: C) {
+    open operator fun setValue(thisRef: ParameterContainer<*>, property: KProperty<*>, value: C) {
         this.value = value
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun readValueFromAnotherParameter(other: Parameter) {
-        readValueFromAnotherCollection((other as CollectionParameter<P, I, C>).value)
+        readValueFromAnotherCollection((other as ParameterCollectionParameter<P, I, C>).value)
     }
 
     private fun readValueFromAnotherCollection(other: C) {
         value.modify { read(other) }
     }
+
+    override fun toString() = "${this::class.simpleName}: $value"
 }
 
-open class DictionaryParameter<P : Parameter, I : ParameterUniverseItem<out P, *>>(
-    metaData: CollectionParameterMetaData<P, I>,
-    initialValue: ParameterDictionary<P, I> = ParameterDictionary(metaData.parameterUniverse)
-): CollectionParameter<P, I, ParameterDictionary<P, I>>(metaData, initialValue)
+open class DictionaryParameter<P : Parameter, I : ParameterUniverseItem<P>>(
+    parameterUniverse: ParameterUniverse<P, I>,
+    initialValue: ParameterDictionary<P, I> = ParameterDictionary(parameterUniverse)
+): ParameterCollectionParameter<P, I, ParameterDictionary<P, I>>(parameterUniverse, initialValue)
 
-open class MapParameter<P : Parameter, I : ParameterUniverseItem<out P, *>>(
-    metaData: CollectionParameterMetaData<P, I>,
-    initialValue: ParameterMap<P, I> = ParameterMap(metaData.parameterUniverse)
-): CollectionParameter<P, I, ParameterMap<P, I>>(metaData, initialValue)
+open class MapParameter<P : Parameter, I : ParameterUniverseItem<P>>(
+    parameterUniverse: ParameterUniverse<P, I>,
+    initialValue: ParameterMap<P, I> = ParameterMap(parameterUniverse)
+): ParameterCollectionParameter<P, I, ParameterMap<P, I>>(parameterUniverse, initialValue)
 
-open class UUIDParameter(
-    metaData: ParameterMetaData,
-    initialValue: UUID = ZERO_VALUE
-): GenericParameter<UUID>(metaData, initialValue) {
+open class UUIDParameter(initialValue: UUID = ZERO_VALUE): GenericParameter<UUID>(initialValue) {
 
     override fun <ELEMENT, OBJECT> read(
         readCtx: ReadContext<ELEMENT, OBJECT>,

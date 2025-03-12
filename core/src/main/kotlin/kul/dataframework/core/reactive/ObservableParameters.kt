@@ -1,15 +1,13 @@
 package kul.dataframework.core.reactive
 
 import kul.dataframework.core.*
+import kotlin.enums.EnumEntries
 
 /**
  * @author Cco0lL created 1/2/25 2:08AM
  **/
 
-open class ObservableBooleanParameter(
-    metadata: ParameterMetaData,
-    initialValue: Boolean = false
-): BooleanParameter(metadata, initialValue) {
+open class ObservableBooleanParameter(initialValue: Boolean = false): BooleanParameter(initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
@@ -27,10 +25,7 @@ open class ObservableBooleanParameter(
         }
 }
 
-open class ObservableIntParameter(
-    metaData: ParameterMetaData,
-    initialValue: Int = 0
-): IntParameter(metaData, initialValue) {
+open class ObservableIntParameter(initialValue: Int = 0): IntParameter(initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
@@ -48,10 +43,7 @@ open class ObservableIntParameter(
         }
 }
 
-open class ObservableFloatParameter(
-    metaData: ParameterMetaData,
-    initialValue: Float = 0f
-): FloatParameter(metaData, initialValue) {
+open class ObservableFloatParameter(initialValue: Float = 0f): FloatParameter(initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
@@ -69,10 +61,7 @@ open class ObservableFloatParameter(
         }
 }
 
-open class ObservableLongParameter(
-    metaData: ParameterMetaData,
-    initialValue: Long = 0
-): LongParameter(metaData, initialValue) {
+open class ObservableLongParameter(initialValue: Long = 0): LongParameter(initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
@@ -90,10 +79,7 @@ open class ObservableLongParameter(
         }
 }
 
-open class ObservableDoubleParameter(
-    metaData: ParameterMetaData,
-    initialValue: Double = 0.0
-): DoubleParameter(metaData, initialValue) {
+open class ObservableDoubleParameter(initialValue: Double = 0.0): DoubleParameter(initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
@@ -111,10 +97,7 @@ open class ObservableDoubleParameter(
         }
 }
 
-open class ObservableStringParameter(
-    metaData: ParameterMetaData,
-    initialValue: String = "-"
-): StringParameter(metaData, initialValue) {
+open class ObservableStringParameter(initialValue: String = "-"): StringParameter(initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 
@@ -133,9 +116,9 @@ open class ObservableStringParameter(
 }
 
 open class ObservableEnumParameter<T : Enum<T>>(
-    metaData: EnumParameterMetadata<T>,
-    initialValue: T = metaData.enumUniverse[0]
-): EnumParameter<T>(metaData, initialValue) {
+    enumEntries: EnumEntries<T>,
+    initialValue: T = enumEntries[0]
+): EnumParameter<T>(enumEntries, initialValue) {
 
     private val subscribers = ArrayList<ParameterSubscriber>(2)
 

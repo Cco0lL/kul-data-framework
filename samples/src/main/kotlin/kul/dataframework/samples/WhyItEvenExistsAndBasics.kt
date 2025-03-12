@@ -6,22 +6,15 @@ import kul.dataframework.core.reactive.ObservableStringParameter
 import kul.dataframework.core.reactive.watch
 import kul.dataframework.serialization.gson.readJson
 import kul.dataframework.serialization.gson.toJson
+import kotlin.reflect.KProperty
 
 /**
  * @author Cco0lL created 11/29/24 8:19PM
  **/
-
 class PartOfSomethingNew: ParameterizedObject() {
-
-    var somePieceOfBeauty by +StringParameter(BeautyMeta, "even after the darkest night comes the dawn")
-    var magicNumber by +ObservableFloatParameter(MagicNumMeta, 0f)
-    var reactiveMagicField by +ObservableStringParameter(ReactiveMagicField, "woah that's a magic")
-
-    companion object {
-        val BeautyMeta = ParameterMetaData("somePieceOfBeauty")
-        val MagicNumMeta = ParameterMetaData("position")
-        val ReactiveMagicField = ParameterMetaData("reactiveMagicField")
-    }
+    var somePieceOfBeauty: String by StringParameter()
+    var magicNumber: Float by ObservableFloatParameter()
+    var reactiveMagicField: String by ObservableStringParameter()
 }
 
 fun main() {
@@ -50,8 +43,9 @@ fun main() {
 
     //reactivity example
     partOfSomethingNew.watch {
-        println(reactiveMagicField) // will print "woah that's a magic"
+        println(reactiveMagicField + somePieceOfBeauty + "$magicNumber")
     }
+
 
     partOfSomethingNew.modify {
         reactiveMagicField = "or not? :thinking:" // will print "or not? :thinking:"

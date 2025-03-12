@@ -1,10 +1,12 @@
 package kul.dataframework.core
 
+import kotlin.reflect.KProperty
+
 /**
  * @author Cco0lL created 9/21/24 5:14PM
  **/
 
-open class ParameterizedObject : ParameterContainer<Parameter>() {
+open class ParameterizedObject : ParameterContainer<Parameter>(), Iterable<Parameter> {
 
     protected val parameters = LinkedHashMap<String, Parameter>(2, 1.0f)
 
@@ -13,12 +15,13 @@ open class ParameterizedObject : ParameterContainer<Parameter>() {
         return parameters[key] as FUN_P
     }
 
-    protected fun <P : Parameter> add(parameter: P): P {
-        parameters[parameter.metaData.key] = parameter
-        return parameter
+    fun <P : Parameter> get(property: KProperty<*>): P? {
+        return get(property.name)
     }
 
-    protected operator fun <P : Parameter> P.unaryPlus() = add(this)
+    internal fun _injectParameter(param: Parameter) {
+        parameters[param.name] = param
+    }
 
     fun read(other: ParameterizedObject) {
         other.readIt {
@@ -31,11 +34,11 @@ open class ParameterizedObject : ParameterContainer<Parameter>() {
     }
 
     open fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, obj: OBJECT) {
-        forEach { it.read(readCtx, readCtx.getElement(it.metaData.key, obj)) }
+        forEach { it.read(readCtx, readCtx.getElement(it.name, obj)) }
     }
 
     open fun <ELEMENT, OBJECT> write(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT) {
-        forEach { writeCtx.writeElement(it.metaData.key, obj, it.toElement(writeCtx, obj)) }
+        forEach { writeCtx.writeElement(it.name, obj, it.toElement(writeCtx, obj)) }
     }
 
     override fun iterator() = object : Iterator<Parameter> {

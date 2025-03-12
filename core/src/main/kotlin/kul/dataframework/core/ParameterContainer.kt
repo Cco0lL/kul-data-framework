@@ -3,7 +3,7 @@ package kul.dataframework.core
 /**
  * @author Cco0lL created 9/20/24 3:44AM
  **/
-abstract class ParameterContainer<P : Parameter> : Iterable<P> {
+abstract class ParameterContainer<P : Parameter> {
 
     /**
      * Scopes of the operations can be recursive, but every usage of fences always has effects
@@ -14,28 +14,12 @@ abstract class ParameterContainer<P : Parameter> : Iterable<P> {
 
     abstract fun <FUN_P : P> get(key: String): FUN_P?
 
-    fun <FUN_P : P> get(metaData: ParameterMetaData): FUN_P? {
-        return get(metaData.key)
-    }
-
     open fun copy(): ParameterContainer<P> {
         throw UnsupportedOperationException("Not implemented")
     }
 
     protected open fun handleBeforeModifications() {}
     protected open fun handleAfterModifications() {}
-
-    open fun disableModifications() {
-        for (param in this) {
-            param.canModifyValue = false
-        }
-    }
-
-    open fun enableModifications() {
-        for (param in this) {
-            param.canModifyValue = true
-        }
-    }
 
     /**
      * Fences describe the scope of operations that should be happened in a part of code.
