@@ -12,7 +12,7 @@ class TestUniverseItem(
 ) : ParameterUniverseItem<IntParameter>(creator) {
 }
 
-object TestUniverse: ParameterUniverse<Parameter, ParameterUniverseItem<*>>("test") {
+object TestUniverse: ParameterUniverse<Parameter, ParameterUniverseItem<Parameter>>("test") {
     val Item1 by TestUniverseItem { IntParameter() }
     val Item2 by TestUniverseItem { IntParameter() }
 }

@@ -18,8 +18,8 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
         return backingList.firstOrNull { it.key === universeItem } as? FUN_P
     }
 
-    override fun add(universeItem: I, param: P) {
-        backingList += Node(universeItem, param)
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P) {
+        backingList += Node(universeItem as I, param as P)
     }
 
     override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P>): FUN_P? {
@@ -116,8 +116,8 @@ class ParameterMap<P : Parameter, I : ParameterUniverseItem<P>>(
         return backingMap[universeItem as I] as? FUN_P
     }
 
-    override fun add(universeItem: I, param: P) {
-        backingMap[universeItem] = param
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P) {
+        backingMap[universeItem as I] = param as P
     }
 
     override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P>): FUN_P? {
@@ -184,11 +184,11 @@ abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<P>>(
     override operator fun <FUN_P : P> get(key: String) = get(universe.getItemNonNull(key)) as? FUN_P
     abstract operator fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P>): FUN_P?
 
-    abstract fun add(universeItem: I, param: P)
-    fun <FUN_P : P> add(universeItem: ParameterUniverseItem<FUN_P>, initBlock: (FUN_P.() -> Unit)? = null) {
+    abstract fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P)
+    fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> add(universeItem: FUN_I, initBlock: (FUN_P.() -> Unit)? = null) {
         val param = universeItem.createParam()
         initBlock?.run { param.apply(this) }
-        add(universeItem as I, param)
+        set(universeItem, param)
     }
 
     operator fun minusAssign(universeItem: ParameterUniverseItem<P>) { remove(universeItem) }
@@ -208,7 +208,7 @@ abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<P>>(
         for ((item, param) in other) {
             val newParameter = item.createParam()
             newParameter.readValueFromAnotherParameter(param)
-            add(item, newParameter)
+            set(item, newParameter)
         }
     }
 

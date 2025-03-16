@@ -5,31 +5,32 @@ import kotlin.reflect.KProperty
 /**
  * @author Cco0lL created 9/22/24 5:08PM
  **/
-open class ParameterUniverse<out P : Parameter, I : ParameterUniverseItem<P>>(val key: String): Iterable<I> {
+@Suppress("UNCHECKED_CAST")
+open class ParameterUniverse<P : Parameter, I : ParameterUniverseItem<P>>(val key: String): Iterable<I> {
 
     private val universe: MutableMap<String, I> = LinkedHashMap(2, 1f)
 
-    operator fun <FUN_I : I> FUN_I.provideDelegate(
-        thisRef: ParameterUniverse<@UnsafeVariance P, I>,
+    operator fun <FUN_I : ParameterUniverseItem<*>> FUN_I.provideDelegate(
+        thisRef: ParameterUniverse<P, I>,
         property: KProperty<*>
     ): FUN_I {
         this.name = property.name
         _setOrdinal(thisRef.size)
-        thisRef.universe[name] = this
+        thisRef.universe[name] = this as I
         return this
     }
 
-    operator fun <FUN_I : I> FUN_I.getValue(
-        thisRef: ParameterUniverse<*, *>,
+    operator fun <FUN_I : ParameterUniverseItem<*>> FUN_I.getValue(
+        thisRef: ParameterUniverse<P, I>,
         property: KProperty<*>
     ): FUN_I { return this }
 
-    fun getItem(parameter: @UnsafeVariance P) = getItem(parameter.name)
+    fun getItem(parameter: P) = getItem(parameter.name)
     fun getItem(key: String) = universe[key]
 
     fun create(key: String): P = getItemNonNull(key).createParam()
 
-    fun getItemNonNull(param: @UnsafeVariance P) = getItemNonNull(param.name)
+    fun getItemNonNull(param: P) = getItemNonNull(param.name)
     fun getItemNonNull(key: String): I {
         val item = universe[key]
         if (item === null) {

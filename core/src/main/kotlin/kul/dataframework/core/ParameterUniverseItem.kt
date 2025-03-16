@@ -1,6 +1,6 @@
 package kul.dataframework.core
 
-open class ParameterUniverseItem<out P : Parameter>(val creator: () -> P): Comparable<ParameterUniverseItem<*>> {
+open class ParameterUniverseItem<P : Parameter>(val creator: () -> P): Comparable<ParameterUniverseItem<*>> {
 
     lateinit var name: String
         internal set
