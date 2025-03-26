@@ -42,7 +42,7 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
                 val itemObject = readCtx.elementAsObject(it)
                 val name = readCtx.readString("key", itemObject)
 
-                val item = universe.getItemNonNull(name)
+                val item = universe.getItemByNameNonNull(name)
                 val param = item.createParam()
 
                 param.read(readCtx, readCtx.getElement("value", itemObject))
@@ -128,7 +128,7 @@ class ParameterMap<P : Parameter, I : ParameterUniverseItem<P>>(
         readCtx.elementAsMap(
             element,
             { backingMap },
-            { universe.getItemNonNull(readCtx.elementAsString(it)) },
+            { universe.getItemByNameNonNull(readCtx.elementAsString(it)) },
             { k, e -> k.createParam().apply { read(readCtx, e) } }
         )
     }
@@ -181,7 +181,7 @@ abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<P>>(
 
     abstract val size: Int
 
-    override operator fun <FUN_P : P> get(key: String) = get(universe.getItemNonNull(key)) as? FUN_P
+    override operator fun <FUN_P : P> get(key: String) = get(universe.getItemByNameNonNull(key)) as? FUN_P
     abstract operator fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P>): FUN_P?
 
     abstract fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P)
@@ -193,9 +193,9 @@ abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<P>>(
 
     operator fun minusAssign(universeItem: ParameterUniverseItem<P>) { remove(universeItem) }
     abstract fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P>): FUN_P?
-    fun remove(key: String): P? { return remove(universe.getItemNonNull(key)) }
+    fun remove(key: String): P? { return remove(universe.getItemByNameNonNull(key)) }
 
-    open fun contains(key: String) = contains(universe.getItemNonNull(key))
+    open fun contains(key: String) = contains(universe.getItemByNameNonNull(key))
     open fun contains(universeItem: ParameterUniverseItem<P>) =
         get(universeItem) !== null
 

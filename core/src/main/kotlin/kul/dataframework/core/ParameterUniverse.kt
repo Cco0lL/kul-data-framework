@@ -1,5 +1,7 @@
 package kul.dataframework.core
 
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.reflect.KProperty
 
 /**
@@ -8,15 +10,37 @@ import kotlin.reflect.KProperty
 @Suppress("UNCHECKED_CAST")
 open class ParameterUniverse<P : Parameter, I : ParameterUniverseItem<P>>(val key: String): Iterable<I> {
 
-    private val universe: MutableMap<String, I> = LinkedHashMap(2, 1f)
+    private val itemsByName: MutableMap<String, I> = HashMap()
+    private val organizedByOrdinal = arrayListOf<I>()
+
+    val all = Collections.unmodifiableList(organizedByOrdinal)
+
+    fun getItemByName(key: String) = itemsByName[key]
+    fun getItemByOrdinal(ordinal: Int) = organizedByOrdinal[ordinal]
+
+    fun getItemByNameNonNull(key: String): I {
+        val item = itemsByName[key]
+        if (item === null) {
+            throw IllegalArgumentException("$key is not in $itemsByName")
+        }
+        return item
+    }
+
+    val size get() = itemsByName.size
+
+    override fun iterator() = all.iterator()
+
+    override fun toString() = "universe: $key"
 
     operator fun <FUN_I : ParameterUniverseItem<*>> FUN_I.provideDelegate(
         thisRef: ParameterUniverse<P, I>,
         property: KProperty<*>
     ): FUN_I {
         this.name = property.name
-        _setOrdinal(thisRef.size)
-        thisRef.universe[name] = this as I
+        _setOrdinal(organizedByOrdinal.size)
+        val castedThis = this as I
+        thisRef.organizedByOrdinal += castedThis
+        thisRef.itemsByName[name] = castedThis
         return this
     }
 
@@ -24,24 +48,4 @@ open class ParameterUniverse<P : Parameter, I : ParameterUniverseItem<P>>(val ke
         thisRef: ParameterUniverse<P, I>,
         property: KProperty<*>
     ): FUN_I { return this }
-
-    fun getItem(parameter: P) = getItem(parameter.name)
-    fun getItem(key: String) = universe[key]
-
-    fun create(key: String): P = getItemNonNull(key).createParam()
-
-    fun getItemNonNull(param: P) = getItemNonNull(param.name)
-    fun getItemNonNull(key: String): I {
-        val item = universe[key]
-        if (item === null) {
-            throw IllegalArgumentException("$key is not in $universe")
-        }
-        return item
-    }
-
-    val size get() = universe.size
-
-    override fun iterator() = universe.values.iterator()
-
-    override fun toString() = "universe: $key"
 }
