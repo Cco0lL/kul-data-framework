@@ -7,30 +7,84 @@ import java.util.ArrayList
  **/
 @Suppress("UNCHECKED_CAST")
 class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
-    universe: ParameterUniverse<P, I>,
+    universe: ParameterUniverse<P, I>, private val ordinalOrder: Boolean = false
 ) : ParameterCollection<P, I>(universe) {
 
     private var backingList = arrayListOf<Node>()
 
     override val size get() = backingList.size
 
-    override fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P>): FUN_P? {
-        return backingList.firstOrNull { it.key === universeItem } as? FUN_P
+    override fun clear() {
+        backingList = ArrayList()
     }
 
-    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P) {
-        backingList += Node(universeItem as I, param as P)
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> getImpl(item: FUN_I): P? {
+        val size = size
+        if (size == 0) {
+            return null
+        }
+
+        if (size == 1) {
+            val p1 = backingList[0]
+            if (p1.key === item)
+                return p1.value
+            return null
+        }
+
+        if (ordinalOrder) {
+            val i = backingList.binarySearchBy(item.ordinal) { it.key.ordinal }
+            if (i > 0)
+                return backingList[i].value
+            return null
+        }
+
+        return backingList.firstOrNull { it.key === item }?.value
     }
 
-    override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P>): FUN_P? {
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> setImpl(item: FUN_I, param: FUN_P) {
+        val node = Node(item as I, param as P)
+        if (ordinalOrder && size > 0) {
+            var insertionPoint = backingList.binarySearchBy(item.ordinal) { it.key.ordinal }
+
+            if (insertionPoint < 0)
+                insertionPoint = -(insertionPoint + 1)
+
+            backingList.add(insertionPoint, node)
+
+            return
+        }
+        backingList += node
+    }
+
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> removeImpl(item: FUN_I): P? {
+        val size = size
+        if (size == 0) {
+            return null
+        }
+
+        if (size == 1) {
+            val p1 = backingList[0]
+            if (p1.key === item)
+                return backingList.removeAt(0).value
+            return null
+        }
+
+        if (ordinalOrder) {
+            val i = backingList.binarySearchBy(item.ordinal) { it.key.ordinal }
+            if (i > 0)
+                return backingList.removeAt(i).value
+            return null
+        }
+
         val itr = backingList.iterator()
         while (itr.hasNext()) {
             val next = itr.next()
-            if (next.key === universeItem) {
+            if (next.key === item) {
                 itr.remove()
-                return next as FUN_P
+                return next.value
             }
         }
+
         return null
     }
 
@@ -59,10 +113,6 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
             writeCtx.writeElement("value", itemObject, it.value.toElement(writeCtx, itemObject))
             writeCtx.objectAsElement(itemObject)
         }
-    }
-
-    override fun clear() {
-        backingList = ArrayList()
     }
 
     override fun copy(): ParameterDictionary<P, I> {
@@ -97,7 +147,7 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
 
     private inner class Node(
         override val key: I,
-        override val value: P
+        override var value: P
     ) : Map.Entry<I, P> {
         override fun toString() = "{ \"$key\": \"$value\" }"
     }
@@ -106,22 +156,27 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
 @Suppress("UNCHECKED_CAST")
 class ParameterMap<P : Parameter, I : ParameterUniverseItem<P>>(
     universe: ParameterUniverse<P, I>,
+    backingMapSupplier: () -> MutableMap<I, P> = { hashMapOf() }
 ) : ParameterCollection<P, I>(universe) {
 
-    private val backingMap = LinkedHashMap<I, P>()
+    private val backingMap = backingMapSupplier()
 
     override val size get() = backingMap.size
 
-    override fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P>): FUN_P? {
-        return backingMap[universeItem as I] as? FUN_P
+    override fun clear() { backingMap.clear() }
+
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> getImpl(item: FUN_I) = backingMap[item as I]
+
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> setImpl(item: FUN_I, param: FUN_P) {
+        backingMap[item as I] = param as P
     }
 
-    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P) {
-        backingMap[universeItem as I] = param as P
+    override fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> removeImpl(item: FUN_I): P? {
+        return backingMap.remove(item as I)
     }
 
-    override fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P>): FUN_P? {
-        return backingMap.remove(universeItem as I) as? FUN_P
+    override fun copy(): ParameterMap<P, I> {
+        return ParameterMap(universe).modifyIt { it.read(this) }
     }
 
     override fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT) {
@@ -139,12 +194,6 @@ class ParameterMap<P : Parameter, I : ParameterUniverseItem<P>>(
             { writeCtx.stringElement(it.name, obj) },
             { _, v -> v.toElement(writeCtx, obj) }
         )
-    }
-
-    override fun clear() { backingMap.clear() }
-
-    override fun copy(): ParameterMap<P, I> {
-        return ParameterMap(universe).modifyIt { it.read(this) }
     }
 
     override fun iterator(): MutableIterator<Map.Entry<I, P>> {
@@ -179,43 +228,66 @@ abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<P>>(
     val universe: ParameterUniverse<P, I>,
 ) : ParameterContainer<P>(), MutableIterable<Map.Entry<I, P>> {
 
-    abstract val size: Int
-
-    override operator fun <FUN_P : P> get(key: String) = get(universe.getItemByNameNonNull(key)) as? FUN_P
-    abstract operator fun <FUN_P : P> get(universeItem: ParameterUniverseItem<FUN_P>): FUN_P?
-
-    abstract fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(universeItem: FUN_I, param: FUN_P)
-    fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> add(universeItem: FUN_I, initBlock: (FUN_P.() -> Unit)? = null) {
-        val param = universeItem.createParam()
-        initBlock?.run { param.apply(this) }
-        set(universeItem, param)
+    override operator fun <FUN_P : P> get(key: String): FUN_P? {
+        return getImpl(universe.getItemByNameNonNull(key)) as? FUN_P
     }
 
-    operator fun minusAssign(universeItem: ParameterUniverseItem<P>) { remove(universeItem) }
-    abstract fun <FUN_P : P> remove(universeItem: ParameterUniverseItem<FUN_P>): FUN_P?
-    fun remove(key: String): P? { return remove(universe.getItemByNameNonNull(key)) }
+    operator fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> get(item: FUN_I): FUN_P? {
+        assertItemIsPresentedInUniverse(item)
+        return getImpl(item) as? FUN_P
+    }
+
+    operator fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> set(item: FUN_I, param: FUN_P) {
+        assertItemIsPresentedInUniverse(item)
+        setImpl(item, param)
+    }
+
+    operator fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> invoke(item: FUN_I, initBlock: FUN_P.() -> Unit) {
+        assertItemIsPresentedInUniverse(item)
+        val param = item.createParam()
+        initBlock(param)
+        setImpl(item, param)
+    }
+
+    fun <FUN_P : Parameter> remove(item: ParameterUniverseItem<FUN_P>): FUN_P? {
+        assertItemIsPresentedInUniverse(item)
+        return removeImpl(item) as? FUN_P?
+    }
+
+    fun remove(key: String): P? {
+        return remove(universe.getItemByNameNonNull(key))
+    }
 
     open fun contains(key: String) = contains(universe.getItemByNameNonNull(key))
-    open fun contains(universeItem: ParameterUniverseItem<P>) =
-        get(universeItem) !== null
+    open fun contains(universeItem: ParameterUniverseItem<P>) = get(universeItem) !== null
+
+    private fun assertItemIsPresentedInUniverse(item: ParameterUniverseItem<*>) {
+        assert(universe.getItemByOrdinal(item.ordinal) === item) { "$item is not presented in $universe" }
+    }
 
     fun read(other: ParameterCollection<P, I>) {
         val universe = universe
-        assert(universe == other.universe) {
+        assert(universe === other.universe) {
             "can't read from collection, the universe of which is different"
         }
         clear()
         for ((item, param) in other) {
             val newParameter = item.createParam()
             newParameter.readValueFromAnotherParameter(param)
-            set(item, newParameter)
+            setImpl(item, newParameter)
         }
     }
 
-    abstract fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT)
-    abstract fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT
+    abstract val size: Int
 
     abstract fun clear()
+
+    protected abstract fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> getImpl(item: FUN_I): P?
+    protected abstract fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> setImpl(item: FUN_I, param: FUN_P)
+    protected abstract fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> removeImpl(item: FUN_I): P?
+
+    abstract fun <ELEMENT, OBJECT> read(readCtx: ReadContext<ELEMENT, OBJECT>, element: ELEMENT)
+    abstract fun <ELEMENT, OBJECT> toElement(writeCtx: WriteContext<ELEMENT, OBJECT>, obj: OBJECT): ELEMENT
 
     override fun copy(): ParameterCollection<P, I> {
         throw UnsupportedOperationException("Not Implemented")

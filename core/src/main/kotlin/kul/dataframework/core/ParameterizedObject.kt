@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty
 
 open class ParameterizedObject : ParameterContainer<Parameter>(), Iterable<Parameter> {
 
-    protected val parameters = LinkedHashMap<String, Parameter>(2, 1.0f)
+    protected val parameters = LinkedHashMap<String, Parameter>(8)
 
     override operator fun <FUN_P : Parameter> get(key: String): FUN_P? {
         @Suppress("UNCHECKED_CAST")

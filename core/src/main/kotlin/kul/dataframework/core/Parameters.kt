@@ -42,13 +42,6 @@ open class BooleanParameter(initialValue: Boolean = false) : Parameter() {
     }
 
     override fun toString() = "${this::class.simpleName}: $value"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as BooleanParameter
-        return value == other.value
-    }
 }
 
 open class IntParameter(initialValue: Int = 0) : Parameter() {

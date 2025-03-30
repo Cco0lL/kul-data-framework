@@ -19,8 +19,8 @@ object TestUniverse: ParameterUniverse<Parameter, ParameterUniverseItem<Paramete
 
 fun main() {
     val parameterDictionary = ParameterDictionary(TestUniverse)
-    parameterDictionary.add(TestUniverse.Item1) { value = 1 }
-    parameterDictionary.add(TestUniverse.Item2) { value = 2 }
+    parameterDictionary(TestUniverse.Item1) { value = 1 }
+    parameterDictionary(TestUniverse.Item2) { value = 2 }
     println(parameterDictionary)
     println(parameterDictionary.toElement(GsonWriteContext, JsonObject()))
 }
