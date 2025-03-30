@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import kul.dataframework.core.ReadContext
 import kul.dataframework.core.WriteContext
+import java.util.function.IntFunction
 
 /**
  * @author Cco0lL created 8/5/24 6:53 PM
@@ -29,11 +30,12 @@ object GsonReadContext: ReadContext<JsonElement, JsonObject> {
 
     override fun <T, C : MutableCollection<T>> elementAsCollection(
         element: JsonElement,
-        collectionSupplier: () -> C,
+        collectionSupplier: IntFunction<C>,
         collectionItemSupplier: (JsonElement) -> T
     ): C {
-        val collection = collectionSupplier()
-        for (arrayItem in element.asJsonArray) {
+        val jsonArray = element.asJsonArray
+        val collection = collectionSupplier.apply(jsonArray.size())
+        for (arrayItem in jsonArray) {
             collection += collectionItemSupplier(arrayItem)
         }
         return collection
@@ -41,12 +43,13 @@ object GsonReadContext: ReadContext<JsonElement, JsonObject> {
 
     override fun <K, V, M : MutableMap<K, V>> elementAsMap(
         element: JsonElement,
-        mapSupplier: () -> M,
+        mapSupplier: IntFunction<M>,
         keySupplier: (JsonElement) -> K,
         valueSupplier: (K, JsonElement) -> V
     ): M {
-        val map = mapSupplier()
-        for (entryJsonElement in element.asJsonArray) {
+        val jsonArray = element.asJsonArray
+        val map = mapSupplier.apply(jsonArray.size())
+        for (entryJsonElement in jsonArray) {
             val entryJsonObject = entryJsonElement.asJsonObject
 
             val key = keySupplier(entryJsonObject["key"]!!)

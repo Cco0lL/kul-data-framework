@@ -1,5 +1,7 @@
 package kul.dataframework.core
 
+import java.util.function.IntFunction
+
 /**
  * @author Cco0lL created 7/21/24 2:32 PM
  **/
@@ -38,7 +40,7 @@ interface ReadContext<ELEMENT, OBJECT> {
     fun <T, C : MutableCollection<T>> readCollection (
         key: String,
         obj: OBJECT,
-        collectionSupplier: () -> C,
+        collectionSupplier: IntFunction<C>,
         collectionItemSupplier: (ELEMENT) -> T
     ) = elementAsCollection(
         getElement(key, obj),
@@ -49,7 +51,7 @@ interface ReadContext<ELEMENT, OBJECT> {
     fun <K, V, M : MutableMap<K, V>> readMap(
         key: String,
         obj: OBJECT,
-        mapSupplier: () -> M,
+        mapSupplier: IntFunction<M>,
         keySupplier: (ELEMENT) -> K,
         valueSupplier: (K, ELEMENT) -> V
     ) = elementAsMap(getElement(key, obj), mapSupplier, keySupplier, valueSupplier)
@@ -70,13 +72,13 @@ interface ReadContext<ELEMENT, OBJECT> {
 
     fun <T, C : MutableCollection<T>> elementAsCollection(
         element: ELEMENT,
-        collectionSupplier: () -> C,
+        collectionSupplier: IntFunction<C>,
         collectionItemSupplier: (ELEMENT) -> T
     ): C
 
     fun <K, V, M : MutableMap<K, V>> elementAsMap(
         element: ELEMENT,
-        mapSupplier: () -> M,
+        mapSupplier: IntFunction<M>,
         keySupplier: (ELEMENT) -> K,
         valueSupplier : (K, ELEMENT) -> V
     ): M
