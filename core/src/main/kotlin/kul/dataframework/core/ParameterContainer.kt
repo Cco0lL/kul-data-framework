@@ -12,7 +12,7 @@ abstract class ParameterContainer<P : Parameter> {
      */
     protected var modifyScopeCounter = 0
 
-    abstract fun <FUN_P : P> get(key: String): FUN_P?
+    abstract fun <FUN_P : P> get(name: String): FUN_P?
 
     open fun copy(): ParameterContainer<P> {
         throw UnsupportedOperationException("Not implemented")

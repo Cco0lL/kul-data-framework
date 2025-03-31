@@ -41,7 +41,22 @@ open class BooleanParameter(initialValue: Boolean = false) : Parameter() {
         value = (other as BooleanParameter).value
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BooleanParameter
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 }
 
 open class IntParameter(initialValue: Int = 0) : Parameter() {
@@ -77,7 +92,22 @@ open class IntParameter(initialValue: Int = 0) : Parameter() {
         value = (other as IntParameter).value
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as IntParameter
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 }
 
 open class FloatParameter(initialValue: Float = 0f) : Parameter() {
@@ -113,7 +143,22 @@ open class FloatParameter(initialValue: Float = 0f) : Parameter() {
         value = (other as FloatParameter).value
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FloatParameter
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 }
 
 open class LongParameter(initialValue: Long = 0L) : Parameter() {
@@ -149,7 +194,22 @@ open class LongParameter(initialValue: Long = 0L) : Parameter() {
         value = (other as LongParameter).value
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LongParameter
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 }
 
 open class DoubleParameter(initialValue: Double = 0.0): Parameter() {
@@ -185,7 +245,22 @@ open class DoubleParameter(initialValue: Double = 0.0): Parameter() {
         value = (other as DoubleParameter).value
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as DoubleParameter
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 }
 
 open class EnumParameter<T : Enum<T>>(
@@ -266,7 +341,22 @@ open class ParameterizedObjectParameter<PO : ParameterizedObject>(initialValue: 
         value.modify { read(other) }
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ParameterizedObjectParameter<*>
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 
 }
 
@@ -315,7 +405,22 @@ open class ParameterCollectionParameter<P : Parameter, I : ParameterUniverseItem
         value.modify { read(other) }
     }
 
-    override fun toString() = "${this::class.simpleName}: $value"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ParameterCollectionParameter<*, *, *>
+
+        return name == other.name && value == other.value
+    }
+
+    override fun hashCode(): Int {
+        var hashCode = name.hashCode()
+        hashCode = 31 * hashCode + value.hashCode()
+        return hashCode
+    }
+
+    override fun toString() = "$name: $value"
 }
 
 open class DictionaryParameter<P : Parameter, I : ParameterUniverseItem<P>>(

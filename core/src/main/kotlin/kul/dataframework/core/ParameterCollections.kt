@@ -12,7 +12,7 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
     private val ordinalOrder: Boolean = false
 ) : ParameterCollection<P, I>(universe) {
 
-    private var backingList: MutableList<Node>
+    private var backingList: MutableList<Node<I, P>>
     init {
         backingList = if (capacity == DEFAULT_CAPACITY)
             Collections.emptyList()
@@ -155,11 +155,30 @@ class ParameterDictionary<P : Parameter, I : ParameterUniverseItem<P>>(
         return backingList.toString()
     }
 
-    private inner class Node(
+    private class Node<I, P>(
         override val key: I,
         override var value: P
     ) : Map.Entry<I, P> {
+
         override fun toString() = "{ \"$key\": \"$value\" }"
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Node<*, *>
+
+            if (key != other.key) return false
+            if (value != other.value) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = key.hashCode()
+            result = 31 * result + value.hashCode()
+            return result
+        }
     }
 
     companion object {
@@ -270,11 +289,11 @@ abstract class ParameterCollection<P : Parameter, I : ParameterUniverseItem<P>>(
     val universe: ParameterUniverse<P, I>,
 ) : ParameterContainer<P>(), MutableIterable<Map.Entry<I, P>> {
 
-    override operator fun <FUN_P : P> get(key: String): FUN_P? {
+    override operator fun <FUN_P : P> get(name: String): FUN_P? {
         if (isNotAllocated()) {
             return null
         }
-        return getImpl(universe.getItemByNameNonNull(key)) as? FUN_P
+        return getImpl(universe.getItemByNameNonNull(name)) as? FUN_P
     }
 
     operator fun <FUN_P, FUN_I : ParameterUniverseItem<FUN_P>> get(item: FUN_I): FUN_P? {

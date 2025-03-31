@@ -1,5 +1,8 @@
 package kul.dataframework.core
 
+import java.util.StringJoiner
+import kotlin.collections.HashMap
+import kotlin.math.min
 import kotlin.reflect.KProperty
 
 /**
@@ -8,11 +11,12 @@ import kotlin.reflect.KProperty
 
 open class ParameterizedObject : ParameterContainer<Parameter>(), Iterable<Parameter> {
 
-    protected val parameters = LinkedHashMap<String, Parameter>(8)
+    private var size = 0
+    private var parameters = arrayOfNulls<Parameter>(CHUNK_PARAMS_CAPACITY)
 
-    override operator fun <FUN_P : Parameter> get(key: String): FUN_P? {
+    override operator fun <FUN_P : Parameter> get(name: String): FUN_P? {
         @Suppress("UNCHECKED_CAST")
-        return parameters[key] as FUN_P
+        return find { it.name == name } as? FUN_P
     }
 
     fun <P : Parameter> get(property: KProperty<*>): P? {
@@ -20,15 +24,30 @@ open class ParameterizedObject : ParameterContainer<Parameter>(), Iterable<Param
     }
 
     internal fun _injectParameter(param: Parameter) {
-        parameters[param.name] = param
+        val ps = parameters
+        if (size == ps.size) {
+            val nps = arrayOfNulls<Parameter>(ps.size + CHUNK_PARAMS_CAPACITY)
+            System.arraycopy(ps, 0, nps, 0, ps.size)
+            parameters = nps
+        }
+        ps[size++] = param
     }
 
     fun read(other: ParameterizedObject) {
         other.readIt {
-            val parameters = parameters
-            val otherParameters = other.parameters
-            for ((key, param) in parameters) {
-                param.readValueFromAnotherParameter(otherParameters[key]!!)
+            if (other::class === this::class) {
+                for (i in 0 until size) {
+                    val thisParam = parameters[size]!!
+                    val otherParam = it.parameters[size]!!
+                    thisParam.readValueFromAnotherParameter(otherParam)
+                }
+            } else {
+                val otherParams = other.associateByTo(HashMap((size * 0.75f + 1).toInt())) { p -> p.name }
+                for (param in this) {
+                    otherParams[param.name]?.let { otherParam ->
+                        param.readValueFromAnotherParameter(otherParam)
+                    }
+                }
             }
         }
     }
@@ -42,24 +61,50 @@ open class ParameterizedObject : ParameterContainer<Parameter>(), Iterable<Param
     }
 
     override fun iterator() = object : Iterator<Parameter> {
-        private var backingItr = parameters.values.iterator()
-        override fun hasNext() = backingItr.hasNext()
-        override fun next() = backingItr.next()
+        private var cursor = 0
+        override fun hasNext() = cursor != size
+        override fun next() = parameters[cursor++]!!
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
+
         other as ParameterizedObject
-        return parameters == other.parameters
+
+        if (size != other.size) {
+            return false
+        }
+
+        val ps = parameters
+        val otherPs = other.parameters
+
+        for (i in 0 until size) {
+            if (ps[i]!! != otherPs[i]!!)
+                return false
+        }
+
+        return true
     }
 
     override fun hashCode(): Int {
-        val hashCode = parameters.hashCode()
+        var hashCode = 1
+        val ps = parameters
+        for (i in 0 until size) {
+            hashCode = 31 * hashCode + ps[i]!!.hashCode()
+        }
         return hashCode
     }
 
     override fun toString(): String {
-        return parameters.toString()
+        val sj = StringJoiner(", ", "[", "]")
+        for (i in 0 until size) {
+            sj.add(parameters[i]!!.toString())
+        }
+        return sj.toString()
+    }
+
+    companion object {
+        private const val CHUNK_PARAMS_CAPACITY = 1 shl 3
     }
 }
